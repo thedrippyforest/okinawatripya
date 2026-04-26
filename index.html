@@ -22,7 +22,7 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     body { background-color: #FDFBF7; font-family: sans-serif; }
-    input:focus { outline: none; border-color: #D4A373; box-shadow: 0 0 0 2px rgba(212, 163, 115, 0.2); }
+    input:focus { outline: none; box-shadow: 0 0 0 2px rgba(212, 163, 115, 0.2); }
   </style>
 </head>
 <body>
@@ -49,36 +49,12 @@
       return [value, setValue];
     };
 
-    // --- 手繪風插畫生成器 ---
-    const generateSticker = (bgColor, emoji, text) => {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="46" fill="${bgColor}" stroke="#FFFFFF" stroke-width="4"/>
-        <text x="50" y="58" font-size="36" text-anchor="middle">${emoji}</text>
-        <text x="50" y="82" font-size="12" font-family="sans-serif" font-weight="bold" fill="#5C4D43" text-anchor="middle">${text}</text>
-        <circle cx="25" cy="25" r="3" fill="#FFF" opacity="0.6"/>
-        <circle cx="75" cy="35" r="4" fill="#FFF" opacity="0.6"/>
-        <circle cx="80" cy="70" r="2" fill="#FFF" opacity="0.5"/>
-        <path d="M 20 50 Q 15 45 20 40" stroke="#FFF" stroke-width="2" fill="none" opacity="0.5"/>
-      </svg>`;
-      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-    };
-
-    const stickerData = {
-      'airplane': generateSticker('#BBDEFB', '✈️', '出發!'),
-      'beach': generateSticker('#FFE082', '🦀', '沖繩海'),
-      'whale-shark': generateSticker('#81D4FA', '🐋', '大鯨鯊'),
-      'capybara': generateSticker('#C8E6C9', '🦫', '水豚君'),
-      'shisa': generateSticker('#FFCCBC', '🦁', '風獅爺'),
-      'onigiri': generateSticker('#FFF9C4', '🍙', '好好吃'),
-      'luggage': generateSticker('#F8BBD0', '🧳', "Let's Go"),
-      'shell': generateSticker('#B2EBF2', '🐚', '星砂'),
-      'church': generateSticker('#E1BEE7', '💒', '滿滿祝福'),
-      'flower': generateSticker('#DCEDC8', '🌺', '扶桑花'),
-      'dessert': generateSticker('#D7CCC8', '🍮', '下午茶'),
-      'rainbow': generateSticker('#FFECB3', '🌈', '彩虹回憶')
-    };
-
-    const getMapLink = (query) => `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
+    // --- 萬用地圖連結魔法 (解決 iOS 阻擋問題) ---
+    const getMapLink = (query) => `https://maps.google.com/?q=${encodeURIComponent(query)}`;
+    
+    // 轉換 Google Drive 連結為圖片直接顯示網址
+    const getDriveImage = (id) => `https://drive.google.com/uc?export=view&id=${id}`;
+    const getDriveDownload = (id) => `https://drive.google.com/uc?export=download&id=${id}`;
 
     // --- 基礎行程資料 ---
     const itineraryData = [
@@ -167,8 +143,7 @@
       }
     ];
 
-    const basePrompt = "A very cute, simple, hand-drawn illustration in the style of Sumikko Gurashi. Warm earth tones, low saturation pastel colors, high lightness, very simple round and chubby shapes, cozy and healing vibe, tiny cute face features, clean light beige background, high quality, kid friendly. ";
-
+    // --- 任務與媽咪雲端貼紙資料 ---
     const missionsData = {
       jiebao: {
         theme: "熱血小勇士", color: "bg-[#E6F0FA]", activeColor: "text-[#4A90E2]",
@@ -181,12 +156,12 @@
           "早上自己把小背包拉鍊拉好", "在機場找到一台有圖案的飛機", "大聲跟沖繩的天空說掰掰", "大口吃完半個豬肉蛋飯糰", "親媽咪一下，謝謝她帶我出來玩"
         ],
         stickers: [
-          { id: "jb_1", title: "圓滾小飛機", prompt: basePrompt + "A tiny chubby airplane character with a cute tiny face." },
-          { id: "jb_2", title: "害羞小寄居蟹", prompt: basePrompt + "A tiny round hermit crab hiding in a pastel shell on the sand." },
-          { id: "jb_3", title: "發呆大鯨鯊", prompt: basePrompt + "A chubby round blue whale shark character floating peacefully with a tiny face." },
-          { id: "jb_4", title: "發懶水豚君", prompt: basePrompt + "A chubby round capybara character with a tiny green leaf on its head, looking sleepy." },
-          { id: "jb_5", title: "Ｑ版風獅爺", prompt: basePrompt + "A tiny round Okinawa Shisa lion character sitting quietly with a cute little face." },
-          { id: "jb_6", title: "胖嘟嘟飯糰", prompt: basePrompt + "A chubby Okinawa pork and egg onigiri character with a tiny happy face." }
+          { title: "Day 1 暮色啟程", url: getDriveImage("1XiNugmrmEowt194hTtSW4ip7AEOSi9b3"), dlUrl: getDriveDownload("1XiNugmrmEowt194hTtSW4ip7AEOSi9b3") },
+          { title: "Day 2 海濱探險", url: getDriveImage("16EJx-hUS6okCaEeerkHIU1EyTATIwUNJ"), dlUrl: getDriveDownload("16EJx-hUS6okCaEeerkHIU1EyTATIwUNJ") },
+          { title: "Day 3 遇見鯨鯊", url: getDriveImage("1GzbzoCncGCFTBH1MQ9LL4yL7m5W9P9cs"), dlUrl: getDriveDownload("1GzbzoCncGCFTBH1MQ9LL4yL7m5W9P9cs") },
+          { title: "Day 4 生態探險", url: getDriveImage("1E5CWWCEFzfN_b3hSpzOazfgU3lxXGLkg"), dlUrl: getDriveDownload("1E5CWWCEFzfN_b3hSpzOazfgU3lxXGLkg") },
+          { title: "Day 5 尋找守護神", url: getDriveImage("1RiAhcgyg-YPtiSp_k80i0FQ-FDQndcVb"), dlUrl: getDriveDownload("1RiAhcgyg-YPtiSp_k80i0FQ-FDQndcVb") },
+          { title: "Day 6 滿載而歸", url: getDriveImage("1MY_lpdf0_GwSvuQa40E9_NYIYoKRKUCU"), dlUrl: getDriveDownload("1MY_lpdf0_GwSvuQa40E9_NYIYoKRKUCU") }
         ]
       },
       ningning: {
@@ -200,12 +175,12 @@
           "幫忙媽媽檢查有沒有東西忘記拿", "在機場找一個可愛的沖繩小玩偶", "細細品嚐一口好吃的可麗露甜點", "優雅地吃完一個美味的沖繩飯糰", "緊緊抱抱媽咪說聲謝謝"
         ],
         stickers: [
-          { id: "nn_1", title: "粉彩小行李", prompt: basePrompt + "A tiny round pastel pink luggage character with a cute face." },
-          { id: "nn_2", title: "角落星砂", prompt: basePrompt + "A tiny round star-shaped sand character and a soft pastel seashell character sitting together." },
-          { id: "nn_3", title: "溫暖小教堂", prompt: basePrompt + "A tiny cozy pastel white church building character with a soft blue ocean behind it." },
-          { id: "nn_4", title: "害羞扶桑花", prompt: basePrompt + "A chubby pastel red Okinawa hibiscus flower character with a tiny face." },
-          { id: "nn_5", title: "優雅可麗露", prompt: basePrompt + "A tiny round canele dessert character with a cute little face." },
-          { id: "nn_6", title: "微笑小彩虹", prompt: basePrompt + "A soft pastel rainbow character with tiny round clouds that have cute sleeping faces." }
+          { title: "Day 1 優雅出發", url: getDriveImage("123xM4LuVo7kSbGVicv1sDerwp2ejgpUA"), dlUrl: getDriveDownload("123xM4LuVo7kSbGVicv1sDerwp2ejgpUA") },
+          { title: "Day 2 海洋寶石", url: getDriveImage("1_fTjuNhyN5-H3_fgx2xV3Eh_8hUJmHZF"), dlUrl: getDriveDownload("1_fTjuNhyN5-H3_fgx2xV3Eh_8hUJmHZF") },
+          { title: "Day 3 浪漫見證", url: getDriveImage("1XGur3bURxXnR5YSArhdKCL65GRz9gBWz"), dlUrl: getDriveDownload("1XGur3bURxXnR5YSArhdKCL65GRz9gBWz") },
+          { title: "Day 4 花園仙子", url: getDriveImage("1pVSFTgvFVomTYrokFPJgy-SEPvMLsxee"), dlUrl: getDriveDownload("1pVSFTgvFVomTYrokFPJgy-SEPvMLsxee") },
+          { title: "Day 5 質感甜點", url: getDriveImage("18qK5KUg0Vnny9BVPTJWWy3KRuHXPK2xl"), dlUrl: getDriveDownload("18qK5KUg0Vnny9BVPTJWWy3KRuHXPK2xl") },
+          { title: "Day 6 彩虹回憶", url: getDriveImage("1sfobQf_jlPONEzKGs3UqlInke242GMVe"), dlUrl: getDriveDownload("1sfobQf_jlPONEzKGs3UqlInke242GMVe") }
         ]
       }
     };
@@ -294,7 +269,7 @@
       },
       {
         id: 'c2', title: "大行李箱 (極簡魔法)", icon: "🧳",
-        desc: "BEB5有洗衣機！帶一半衣物就好，剩下一半裝戰利品。",
+        desc: "飯店有洗衣機！帶一半衣物就好，剩下一半裝戰利品。",
         items: [
           { id: 'l6', text: "一家人 3~4 天份衣物 (可在飯店洗脫烘)", checked: false },
           { id: 'l7', text: "泳衣、防曬乳、帽子、太陽眼鏡", checked: false },
@@ -320,7 +295,7 @@
           <div className={`${isActive ? 'bg-[#FAEDCD] text-[#D4A373] p-1.5 rounded-xl shadow-inner' : 'p-1.5'}`}>
             <i className={`${iconClass} text-[20px]`}></i>
           </div>
-          <span className="text-[10px] font-bold mt-0.5">{label}</span>
+          <span className="text-[10px] font-bold mt-0.5 whitespace-nowrap">{label}</span>
         </button>
       );
     }
@@ -328,21 +303,18 @@
     function App() {
       const [activeTab, setActiveTab] = useState('itinerary');
       const [activeChild, setActiveChild] = useState('jiebao');
-      const [activeShopper, setActiveShopper] = useState('maomao'); // 'maomao' or 'leilei'
-      const [activePacker, setActivePacker] = useState('maomao'); // 'maomao' or 'leilei'
+      const [activeShopper, setActiveShopper] = useState('maomao');
+      const [activePacker, setActivePacker] = useState('maomao');
       
       const [completedTasksArr, setCompletedTasksArr] = useStickyState({ jiebao: [], ningning: [] }, 'ddsen-tasks');
       const [maomaoWishlist, setMaomaoWishlist] = useStickyState(defaultMaomaoWishlist, 'ddsen-wish-maomao');
       const [leileiWishlist, setLeileiWishlist] = useStickyState(defaultLeileiWishlist, 'ddsen-wish-leilei');
-      
       const [newWish, setNewWish] = useState('');
       
       const [maomaoLuggage, setMaomaoLuggage] = useStickyState(defaultLuggageCategories, 'ddsen-luggage-maomao');
       const [leileiLuggage, setLeileiLuggage] = useStickyState(defaultLuggageCategories, 'ddsen-luggage-leilei');
       const [newLuggageInputs, setNewLuggageInputs] = useState({});
       
-      const [generatedStickers, setGeneratedStickers] = useState({});
-      const [isGenerating, setIsGenerating] = useState({});
       const [weatherData, setWeatherData] = useState({});
       const [isWeatherSyncing, setIsWeatherSyncing] = useState(false);
 
@@ -382,33 +354,29 @@
         });
       };
 
-      // 產生貼紙魔法（不需要外部API，直接生成SVG確保網頁上一定成功）
-      const generateStickerImage = (id) => {
-        setIsGenerating(prev => ({...prev, [id]: true}));
-        setTimeout(() => {
-          setGeneratedStickers(prev => ({...prev, [id]: stickerData[id]}));
-          setIsGenerating(prev => ({...prev, [id]: false}));
-        }, 1200); // 模擬魔法運作時間
-      };
-
       const currentWishlist = activeShopper === 'maomao' ? maomaoWishlist : leileiWishlist;
       const setCurrentWishlist = activeShopper === 'maomao' ? setMaomaoWishlist : setLeileiWishlist;
 
       const currentLuggage = activePacker === 'maomao' ? maomaoLuggage : leileiLuggage;
       const setCurrentLuggage = activePacker === 'maomao' ? setMaomaoLuggage : setLeileiLuggage;
 
-      const toggleWish = (id) => {
-        setCurrentWishlist(list => list.map(item => item.id === id ? { ...item, checked: !item.checked } : item));
-      };
-      
-      const deleteWish = (id) => {
-        setCurrentWishlist(list => list.filter(item => item.id !== id));
+      const packTheme = activePacker === 'maomao' ? {
+        bgLight: 'bg-[#FAEDCD]', borderLight: 'border-[#F2E8DC]', borderActive: 'border-[#D4A373]',
+        textTitle: 'text-[#D4A373]', textDesc: 'text-[#A3B18A]', textItem: 'text-[#6D5D53]',
+        iconCheck: 'text-[#A3B18A]', iconUncheck: 'text-[#D3C4B7]', btnBg: 'bg-[#D4A373]', btnHover: 'hover:bg-[#C28E5B]',
+        boxBg: 'bg-[#CCD5AE]', boxText: 'text-[#5A6B41]', boxIcon: 'text-[#7A8C5E]'
+      } : {
+        bgLight: 'bg-[#E9EDC9]', borderLight: 'border-[#CCD5AE]', borderActive: 'border-[#7A8C5E]',
+        textTitle: 'text-[#5A6B41]', textDesc: 'text-[#7A8C5E]', textItem: 'text-[#4A5D23]',
+        iconCheck: 'text-[#5A6B41]', iconUncheck: 'text-[#A3B18A]', btnBg: 'bg-[#7A8C5E]', btnHover: 'hover:bg-[#5A6B41]',
+        boxBg: 'bg-[#D4A373]', boxText: 'text-[#6D5D53]', boxIcon: 'text-[#8B6E58]'
       };
 
+      const toggleWish = (id) => { setCurrentWishlist(list => list.map(item => item.id === id ? { ...item, checked: !item.checked } : item)); };
+      const deleteWish = (id) => { setCurrentWishlist(list => list.filter(item => item.id !== id)); };
       const addWish = () => {
         if (!newWish.trim()) return;
-        const newItem = { id: 'w_' + Date.now(), name: newWish, desc: "新增項目", checked: false };
-        setCurrentWishlist([...currentWishlist, newItem]);
+        setCurrentWishlist([...currentWishlist, { id: 'w_' + Date.now(), name: newWish, desc: "新增項目", checked: false }]);
         setNewWish('');
       };
 
@@ -418,16 +386,13 @@
           return { ...cat, items: cat.items.map(item => item.id === itemId ? { ...item, checked: !item.checked } : item) };
         }));
       };
-      
       const deleteLuggage = (catId, itemId) => {
         setCurrentLuggage(cats => cats.map(cat => {
           if (cat.id !== catId) return cat;
           return { ...cat, items: cat.items.filter(item => item.id !== itemId) };
         }));
       };
-
       const handleLuggageInputChange = (catId, value) => { setNewLuggageInputs({ ...newLuggageInputs, [catId]: value }); };
-      
       const addLuggage = (catId) => {
         const text = newLuggageInputs[catId];
         if (!text || !text.trim()) return;
@@ -447,12 +412,13 @@
               <p className="text-[#FDFBF7] opacity-90 text-sm">桔甯bean旅行攻略</p>
             </header>
             
-            <nav className="bg-white/95 backdrop-blur-md px-2 py-2 flex justify-between items-center border-b border-[#F2E8DC] relative z-10">
+            <nav className="bg-white/95 backdrop-blur-md px-1 py-2 flex justify-between items-center border-b border-[#F2E8DC] relative z-10">
               <TabButton id="itinerary" iconClass="ph ph-calendar-heart" label="行程" active={activeTab} set={setActiveTab} />
               <TabButton id="missions" iconClass="ph ph-camera" label="任務" active={activeTab} set={setActiveTab} />
               <TabButton id="food" iconClass="ph ph-fork-knife" label="美食" active={activeTab} set={setActiveTab} />
               <TabButton id="shopping" iconClass="ph ph-shopping-bag" label="血拚" active={activeTab} set={setActiveTab} />
               <TabButton id="luggage" iconClass="ph ph-backpack" label="行李" active={activeTab} set={setActiveTab} />
+              <TabButton id="contact" iconClass="ph ph-address-book" label="聯繫" active={activeTab} set={setActiveTab} />
             </nav>
           </div>
 
@@ -473,11 +439,11 @@
 
                 {itineraryData.map((day, idx) => (
                   <div key={idx} className="bg-white rounded-3xl p-5 shadow-sm border border-[#F2E8DC] relative overflow-hidden">
-                    <a href={day.weather.link} target="_blank" rel="noreferrer" className="absolute top-4 right-4 bg-[#E9EDC9] bg-opacity-50 hover:bg-opacity-100 transition-all text-[#5A6B41] px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shadow-sm">
-                      <span className="text-lg leading-none">{day.weather.icon}</span>
+                    <a href={day.weather?.link || day.link} target="_blank" rel="noreferrer" className="absolute top-4 right-4 bg-[#E9EDC9] bg-opacity-50 hover:bg-opacity-100 transition-all text-[#5A6B41] px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shadow-sm">
+                      <span className="text-lg leading-none">{day.weather?.icon || "🌤️"}</span>
                       <div className="flex flex-col">
-                        <span className="text-[9px] font-bold leading-none">{day.weather.desc}</span>
-                        <span className="text-[10px] font-bold leading-tight">{day.weather.temp}</span>
+                        <span className="text-[9px] font-bold leading-none">{day.weather?.desc || "看天氣"}</span>
+                        <span className="text-[10px] font-bold leading-tight">{day.weather?.temp || ""}</span>
                       </div>
                     </a>
 
@@ -549,33 +515,34 @@
                   <div className="grid grid-cols-2 gap-3">
                     {currentChildData.stickers.map((sticker, idx) => {
                       const isUnlocked = idx < unlockedStickers;
-                      const imageUrl = generatedStickers[sticker.id];
-                      const loading = isGenerating[sticker.id];
 
                       return (
                         <div key={idx} className={`relative p-3 rounded-2xl flex flex-col items-center justify-center border-2 transition-all duration-300 min-h-[140px] ${isUnlocked ? 'bg-[#FAF8F5] border-white shadow-sm' : 'bg-white/40 border-dashed border-gray-300 grayscale opacity-60'}`}>
                           {!isUnlocked && <i className="ph ph-lock-key absolute top-2 right-2 text-gray-400 text-lg"></i>}
                           
                           {isUnlocked ? (
-                            imageUrl ? (
-                              <img src={imageUrl} alt={sticker.title} className="w-24 h-24 object-cover rounded-lg mb-2 shadow-sm touch-callout-default" style={{ WebkitTouchCallout: 'default' }}/>
-                            ) : loading ? (
-                              <div className="flex flex-col items-center mb-2"><i className="ph ph-spinner animate-spin text-[#D4A373] text-2xl mb-2"></i><span className="text-[10px] text-gray-500">魔法繪製中...</span></div>
-                            ) : (
-                              <button onClick={() => generateStickerImage(sticker.id)} className={`mb-2 px-3 py-2 rounded-xl text-[10px] font-bold text-white flex items-center gap-1 shadow-sm ${currentChildData.activeColor.replace('text-', 'bg-')}`}>
-                                <i className="ph ph-magic-wand"></i> 召喚貼紙
-                              </button>
-                            )
+                            <div className="relative group w-full flex flex-col items-center">
+                              <img src={sticker.url} alt={sticker.title} className="w-24 h-24 object-contain mb-2 drop-shadow-sm touch-callout-default pointer-events-auto" style={{ WebkitTouchCallout: 'default' }}/>
+                              <a 
+                                href={sticker.dlUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="absolute bottom-1 right-1 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm hover:bg-white text-[#D4A373] transition-colors"
+                                title="下載貼紙"
+                              >
+                                <i className="ph-bold ph-download-simple text-lg"></i>
+                              </a>
+                            </div>
                           ) : (
                             <div className="w-16 h-16 bg-gray-200 rounded-full mb-2 flex items-center justify-center text-gray-400 font-bold text-xl">?</div>
                           )}
 
-                          <div className="text-xs font-bold text-center text-gray-700">{isUnlocked ? sticker.title : '未解鎖'}</div>
+                          <div className="text-xs font-bold text-center text-gray-700 mt-auto">{isUnlocked ? sticker.title : '未解鎖'}</div>
                         </div>
                       );
                     })}
                   </div>
-                  <p className="text-[10px] text-center mt-4 text-gray-500 font-medium">✨ 解鎖後點擊，內建魔法將會為你畫出專屬貼紙！(長按可下載)</p>
+                  <p className="text-[10px] text-center mt-4 text-gray-500 font-medium">✨ 媽媽愛心特製：長按圖片即可儲存，或點擊下載圖示保留滿滿回憶！</p>
                 </div>
 
                 <div className="space-y-4">
@@ -621,30 +588,30 @@
                   <button onClick={() => setActivePacker('maomao')} className={`flex-1 py-2 text-sm font-bold rounded-full transition-all flex items-center justify-center gap-1 ${activePacker === 'maomao' ? 'bg-[#D4A373] text-white shadow-md' : 'text-[#8E8075]'}`}>
                     <i className="ph-fill ph-backpack"></i> Maomao 行李
                   </button>
-                  <button onClick={() => setActivePacker('leilei')} className={`flex-1 py-2 text-sm font-bold rounded-full transition-all flex items-center justify-center gap-1 ${activePacker === 'leilei' ? 'bg-[#A3B18A] text-white shadow-md' : 'text-[#8E8075]'}`}>
+                  <button onClick={() => setActivePacker('leilei')} className={`flex-1 py-2 text-sm font-bold rounded-full transition-all flex items-center justify-center gap-1 ${activePacker === 'leilei' ? 'bg-[#7A8C5E] text-white shadow-md' : 'text-[#8E8075]'}`}>
                     <i className="ph-fill ph-tote"></i> 蕾蕾行李
                   </button>
                 </div>
 
-                <div className="bg-[#CCD5AE] bg-opacity-30 rounded-3xl p-5 border border-[#CCD5AE] mb-4">
+                <div className={`${packTheme.boxBg} bg-opacity-30 rounded-3xl p-5 border ${packTheme.borderLight} mb-4 transition-colors`}>
                   <div className="flex gap-3">
-                    <i className="ph ph-lightbulb text-[20px] text-[#7A8C5E] shrink-0"></i>
-                    <p className="text-xs text-[#5A6B41] leading-relaxed font-bold mt-0.5">森森魔法策略：只帶 3 天衣物！善用飯店洗衣機，打勾確認不會忘記帶任何東西，隨時可以新增或刪除項目喔！</p>
+                    <i className={`ph ph-lightbulb text-[20px] ${packTheme.boxIcon} shrink-0`}></i>
+                    <p className={`text-xs ${packTheme.boxText} leading-relaxed font-bold mt-0.5`}>森森魔法策略：只帶 3 天衣物！善用飯店洗衣機，打勾確認不會忘記帶任何東西，隨時可以新增或刪除項目喔！</p>
                   </div>
                 </div>
 
                 {currentLuggage.map((category) => (
-                  <div key={category.id} className="bg-white rounded-3xl p-5 shadow-sm border border-[#F2E8DC]">
-                    <h3 className="font-bold text-[#D4A373] flex items-center gap-2 mb-2"><span className="text-xl">{category.icon}</span> {category.title}</h3>
-                    <p className="text-xs text-[#A3B18A] mb-3 pb-3 border-b border-[#F2E8DC]">{category.desc}</p>
+                  <div key={category.id} className={`bg-white rounded-3xl p-5 shadow-sm border ${packTheme.borderLight} transition-colors`}>
+                    <h3 className={`font-bold ${packTheme.textTitle} flex items-center gap-2 mb-2`}><span className="text-xl">{category.icon}</span> {category.title}</h3>
+                    <p className={`text-xs ${packTheme.textDesc} mb-3 pb-3 border-b ${packTheme.borderLight}`}>{category.desc}</p>
                     
-                    <ul className="text-xs text-[#6D5D53] space-y-3 mb-4">
+                    <ul className={`text-xs ${packTheme.textItem} space-y-3 mb-4`}>
                       {category.items.map((item) => (
                         <li key={item.id} className="flex items-start gap-2 group">
                           <div onClick={() => toggleLuggage(category.id, item.id)} className="flex items-start gap-2 cursor-pointer flex-1">
                             {item.checked ? 
-                              <i className="ph-fill ph-check-square text-[#A3B18A] text-[20px] shrink-0 transition-transform active:scale-90"></i> : 
-                              <i className="ph ph-square text-[#D3C4B7] text-[20px] shrink-0 transition-transform active:scale-90 group-hover:text-[#A3B18A]"></i>
+                              <i className={`ph-fill ph-check-square ${packTheme.iconCheck} text-[20px] shrink-0 transition-transform active:scale-90`}></i> : 
+                              <i className={`ph ph-square ${packTheme.iconUncheck} text-[20px] shrink-0 transition-transform active:scale-90`}></i>
                             }
                             <span className={`mt-0.5 transition-all ${item.checked ? 'text-gray-400 line-through' : 'font-medium'}`}>
                               {item.text}
@@ -657,16 +624,16 @@
                       ))}
                     </ul>
                     
-                    <div className="flex gap-2 mt-4 pt-3 border-t border-dashed border-[#F2E8DC]">
+                    <div className={`flex gap-2 mt-4 pt-3 border-t border-dashed ${packTheme.borderLight}`}>
                       <input 
                         type="text" 
                         value={newLuggageInputs[category.id] || ''}
                         onChange={(e) => handleLuggageInputChange(category.id, e.target.value)}
                         placeholder="輸入還要帶的物品..." 
-                        className="flex-1 bg-[#FAEDCD] bg-opacity-30 rounded-xl px-3 py-2 text-xs text-[#5C4D43] placeholder-[#D3C4B7]"
+                        className={`flex-1 ${packTheme.bgLight} bg-opacity-30 rounded-xl px-3 py-2 text-xs ${packTheme.textItem} placeholder-gray-300 focus:border-[${packTheme.borderActive}]`}
                         onKeyPress={(e) => e.key === 'Enter' && addLuggage(category.id)}
                       />
-                      <button onClick={() => addLuggage(category.id)} className="bg-[#D4A373] text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-[#C28E5B] transition-colors">
+                      <button onClick={() => addLuggage(category.id)} className={`${packTheme.btnBg} text-white px-3 py-2 rounded-xl text-xs font-bold ${packTheme.btnHover} transition-colors`}>
                         新增
                       </button>
                     </div>
@@ -726,13 +693,13 @@
                 </div>
                 
                 {/* 互動式願望清單 */}
-                <div className={`bg-white rounded-3xl p-5 shadow-sm border-2 ${activeShopper === 'maomao' ? 'border-[#D4A373]' : 'border-[#A3B18A]'}`}>
+                <div className={`bg-white rounded-3xl p-5 shadow-sm border-2 transition-colors ${activeShopper === 'maomao' ? 'border-[#D4A373]' : 'border-[#A3B18A]'}`}>
                   <div className="flex items-center justify-between mb-3 pb-3 border-b border-[#F2E8DC]">
-                    <h3 className={`font-bold flex items-center gap-2 text-lg ${activeShopper === 'maomao' ? 'text-[#D4A373]' : 'text-[#A3B18A]'}`}>
+                    <h3 className={`font-bold flex items-center gap-2 text-lg transition-colors ${activeShopper === 'maomao' ? 'text-[#D4A373]' : 'text-[#A3B18A]'}`}>
                       <i className={`ph-fill ${activeShopper === 'maomao' ? 'ph-heart' : 'ph-star'} text-[20px]`}></i> 
                       {activeShopper === 'maomao' ? 'Maomao 的願望' : '蕾蕾的願望'}
                     </h3>
-                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${activeShopper === 'maomao' ? 'bg-[#FAEDCD] text-[#D4A373]' : 'bg-[#E9EDC9] text-[#5A6B41]'}`}>
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full transition-colors ${activeShopper === 'maomao' ? 'bg-[#FAEDCD] text-[#D4A373]' : 'bg-[#E9EDC9] text-[#5A6B41]'}`}>
                       已購 {currentWishlist.filter(w => w.checked).length} / {currentWishlist.length}
                     </span>
                   </div>
@@ -792,6 +759,124 @@
                     <div>1. ABC-Mart 限定鞋</div><div>2. Gap Kids 童裝</div><div>3. Ralph Lauren</div><div>4. BEAMS</div><div>5. Coach</div><div>6. Le Creuset 鑄鐵鍋</div><div>7. Adidas/Nike</div><div>8. Francfranc</div><div>9. 森林家族玩具</div><div>10. Tommy Hilfiger</div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* --- 聯繫與緊急資訊分頁 --- */}
+            {activeTab === 'contact' && (
+              <div className="animate-fade-in space-y-5 pb-6">
+                <div className="flex items-center gap-2 mb-3 text-[#8B6E58]">
+                  <i className="ph ph-address-book text-[20px]"></i>
+                  <h2 className="text-xl font-bold">管家服務與緊急聯繫</h2>
+                </div>
+
+                {/* 住宿資訊 */}
+                <div className="bg-white rounded-3xl p-5 shadow-sm border border-[#F2E8DC]">
+                  <h3 className="font-bold text-[#D4A373] flex items-center gap-2 mb-3 pb-3 border-b border-[#F2E8DC] text-lg">
+                    <i className="ph-fill ph-buildings"></i> 住宿地點資訊
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div className="bg-[#FAEDCD] bg-opacity-30 p-3 rounded-2xl">
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="font-bold text-[#6D5D53] text-sm">📍 星野集團 BEB5 沖繩瀨良垣</h4>
+                        <span className="text-[10px] bg-[#D4A373] text-white px-2 py-0.5 rounded flex-shrink-0">5/5 - 5/8</span>
+                      </div>
+                      <p className="text-[10px] text-[#8E8075] mb-2">Hoshino Resorts BEB5 Okinawa Seragaki<br/>星野リゾート BEB5沖縄瀬良垣</p>
+                      <div className="text-[11px] text-[#5C4D43] space-y-1">
+                        <p className="flex items-start gap-1"><i className="ph ph-map-pin mt-0.5"></i> 沖繩縣國頭郡恩納村瀬良垣1860-4</p>
+                        <p className="flex items-center gap-1"><i className="ph ph-phone"></i> +81 50-3134-8094</p>
+                      </div>
+                      <a href={getMapLink("星野集團 BEB5 沖繩瀨良垣")} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-[10px] bg-white border border-[#D4A373] text-[#D4A373] px-3 py-1.5 rounded-full font-bold hover:bg-[#D4A373] hover:text-white transition-colors">
+                        <i className="ph ph-navigation-arrow"></i> 導航至飯店
+                      </a>
+                    </div>
+
+                    <div className="bg-[#E9EDC9] bg-opacity-30 p-3 rounded-2xl">
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="font-bold text-[#5A6B41] text-sm">📍 那霸雀巢飯店 (The Nest)</h4>
+                        <span className="text-[10px] bg-[#7A8C5E] text-white px-2 py-0.5 rounded flex-shrink-0">5/8 - 5/10</span>
+                      </div>
+                      <p className="text-[10px] text-[#7A8C5E] mb-2">Nest Hotel Naha Nishi<br/>ネストホテル那覇西</p>
+                      <div className="text-[11px] text-[#4A5D23] space-y-1">
+                        <p className="flex items-start gap-1"><i className="ph ph-map-pin mt-0.5"></i> 沖繩縣那霸市西1-6-1</p>
+                        <p className="flex items-center gap-1"><i className="ph ph-phone"></i> +81 98-868-2228</p>
+                      </div>
+                      <a href={getMapLink("Nest Hotel Naha Nishi")} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-[10px] bg-white border border-[#7A8C5E] text-[#5A6B41] px-3 py-1.5 rounded-full font-bold hover:bg-[#7A8C5E] hover:text-white transition-colors">
+                        <i className="ph ph-navigation-arrow"></i> 導航至飯店
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 航班資訊 */}
+                <div className="bg-white rounded-3xl p-5 shadow-sm border border-[#F2E8DC]">
+                  <h3 className="font-bold text-[#D4A373] flex items-center gap-2 mb-3 pb-3 border-b border-[#F2E8DC] text-lg">
+                    <i className="ph-fill ph-airplane-tilt"></i> 航班即時動態
+                  </h3>
+                  
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between bg-blue-50 p-3 rounded-xl border border-blue-100">
+                      <div>
+                        <span className="text-[10px] font-bold text-blue-500 mb-1 block">5/5 (日) 去程航班</span>
+                        <h4 className="font-bold text-blue-900 text-sm">華航 CI122</h4>
+                        <p className="text-xs text-blue-700">TPE 17:05 ➔ OKA 19:45</p>
+                      </div>
+                      <a href="https://www.flightradar24.com/data/flights/ci122" target="_blank" rel="noreferrer" className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow-sm transition-colors">
+                        <i className="ph-bold ph-radar text-lg"></i>
+                      </a>
+                    </div>
+                    
+                    <div className="flex items-center justify-between bg-orange-50 p-3 rounded-xl border border-orange-100">
+                      <div>
+                        <span className="text-[10px] font-bold text-orange-500 mb-1 block">5/10 (五) 回程航班</span>
+                        <h4 className="font-bold text-orange-900 text-sm">華航 CI121</h4>
+                        <p className="text-xs text-orange-700">OKA 11:55 ➔ TPE 12:30</p>
+                      </div>
+                      <a href="https://www.flightradar24.com/data/flights/ci121" target="_blank" rel="noreferrer" className="bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-full shadow-sm transition-colors">
+                        <i className="ph-bold ph-radar text-lg"></i>
+                      </a>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-2 text-center">點擊雷達圖示，直接開啟 Flightradar24 查看班機即時位置。</p>
+                </div>
+
+                {/* 緊急聯絡卡 */}
+                <div className="bg-[#FFF0F5] rounded-3xl p-5 shadow-sm border border-[#FBCFE8]">
+                  <h3 className="font-bold text-[#BE185D] flex items-center gap-2 mb-3 pb-3 border-b border-[#FBCFE8] text-lg">
+                    <i className="ph-fill ph-warning-circle"></i> 緊急聯絡平安符
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-bold text-[#9D174D] text-sm mb-1">🏛️ 台北駐日經濟文化代表處 那霸分處</h4>
+                      <p className="text-[11px] text-[#831843] leading-relaxed">
+                        急難救助專線：<a href="tel:+819019428936" className="underline font-bold">+81-90-1942-8936</a><br/>
+                        辦公室電話：<a href="tel:+81988627008" className="underline">+81-98-862-7008</a><br/>
+                        地址：沖繩縣那霸市久茂地3-15-9 6樓
+                      </p>
+                    </div>
+
+                    <div className="border-t border-dashed border-[#FBCFE8] pt-3">
+                      <h4 className="font-bold text-[#9D174D] text-sm mb-1">🏥 距離恩納村較近之大型醫院</h4>
+                      <p className="text-[11px] text-[#831843] leading-relaxed">
+                        <span className="font-bold">沖繩縣立北部醫院 (Nago)</span><br/>
+                        電話：<a href="tel:+81980522719" className="underline">+81 980-52-2719</a><br/>
+                        <a href={getMapLink("沖繩縣立北部病院")} target="_blank" className="text-[#BE185D] flex items-center gap-1 mt-1 hover:underline"><i className="ph ph-map-pin"></i> 開啟地圖導航</a>
+                      </p>
+                    </div>
+
+                    <div className="border-t border-dashed border-[#FBCFE8] pt-3">
+                      <h4 className="font-bold text-[#9D174D] text-sm mb-1">🏥 距離那霸市區較近之大型醫院</h4>
+                      <p className="text-[11px] text-[#831843] leading-relaxed">
+                        <span className="font-bold">沖繩赤十字病院 (Okinawa Red Cross Hospital)</span><br/>
+                        電話：<a href="tel:+81988533134" className="underline">+81 98-853-3134</a><br/>
+                        <a href={getMapLink("沖縄赤十字病院")} target="_blank" className="text-[#BE185D] flex items-center gap-1 mt-1 hover:underline"><i className="ph ph-map-pin"></i> 開啟地圖導航</a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             )}
           </main>
