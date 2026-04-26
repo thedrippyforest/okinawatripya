@@ -5,15 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>魚堡婚禮沖繩之旅</title>
   
-  <!-- 引入 Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- 引入 React -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   
-  <!-- 引入 Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
   <style>
@@ -22,7 +19,9 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     body { background-color: #FDFBF7; font-family: sans-serif; }
-    input:focus { outline: none; box-shadow: 0 0 0 2px rgba(212, 163, 115, 0.2); }
+    input:focus { outline: none; border-color: #D4A373; box-shadow: 0 0 0 2px rgba(212, 163, 115, 0.2); }
+    /* 確保 iOS 支援長按儲存圖片 */
+    img.touch-callout-default { -webkit-touch-callout: default; pointer-events: auto; }
   </style>
 </head>
 <body>
@@ -52,14 +51,14 @@
     // --- 萬用地圖連結魔法 (解決 iOS 阻擋問題) ---
     const getMapLink = (query) => `https://maps.google.com/?q=${encodeURIComponent(query)}`;
     
-    // 轉換 Google Drive 連結為圖片直接顯示網址
-    const getDriveImage = (id) => `https://drive.google.com/uc?export=view&id=${id}`;
+    // 轉換 Google Drive 連結為圖片直接顯示網址 (使用專用 proxy 解決破圖)
+    const getDriveImage = (id) => `https://lh3.googleusercontent.com/d/${id}`;
     const getDriveDownload = (id) => `https://drive.google.com/uc?export=download&id=${id}`;
 
     // --- 基礎行程資料 ---
     const itineraryData = [
       {
-        day: "Day 1", date: "5/5 (日)", title: "傍晚抵達，快樂開場",
+        day: "Day 1", date: "5/5 (二)", title: "傍晚抵達，快樂開場",
         baseTemp: 24, link: "https://tenki.jp/forecast/10/50/9110/47211/",
         weather: { desc: "多雲轉晴", temp: "24-26°C", icon: "🌤️", link: "https://tenki.jp/forecast/10/50/9110/47211/" },
         spots: [
@@ -72,7 +71,7 @@
         tips: "出遊註記：班機17:05起飛，提早2小時抵達。首日不趕路，夜間開車注意安全。"
       },
       {
-        day: "Day 2", date: "5/6 (一)", title: "動物探索與質感海濱",
+        day: "Day 2", date: "5/6 (三)", title: "動物探索與質感海濱",
         baseTemp: 26, link: "https://tenki.jp/forecast/10/50/9110/47311/",
         weather: { desc: "晴朗炎熱", temp: "26-28°C", icon: "☀️", link: "https://tenki.jp/forecast/10/50/9110/47311/" },
         spots: [
@@ -87,7 +86,7 @@
         tips: "出遊註記：今日行程豐富！上午看動物，下午玩水，隨身軟袋記得放小毛巾、防曬乳及孩子的換洗衣物喔！"
       },
       {
-        day: "Day 3", date: "5/7 (二)", title: "幸福見證，水族館與夕陽",
+        day: "Day 3", date: "5/7 (四)", title: "幸福見證，水族館與夕陽",
         baseTemp: 25, link: "https://tenki.jp/forecast/10/50/9110/47311/",
         weather: { desc: "晴時多雲", temp: "25-27°C", icon: "🌤️", link: "https://tenki.jp/forecast/10/50/9110/47311/" },
         spots: [
@@ -101,7 +100,7 @@
         tips: "出遊註記：水族館冷氣較強記得帶薄外套。今日南北移動距離較長，車上可準備喜歡的音樂。"
       },
       {
-        day: "Day 4", date: "5/8 (三)", title: "生態樂園，聚落與血拚",
+        day: "Day 4", date: "5/8 (五)", title: "生態樂園，聚落與血拚",
         baseTemp: 25, link: "https://tenki.jp/forecast/10/50/9110/47211/",
         weather: { desc: "晴朗微風", temp: "26-28°C", icon: "☀️", link: "https://tenki.jp/forecast/10/50/9110/47211/" },
         spots: [
@@ -116,7 +115,7 @@
         tips: "出遊註記：植物園需步行，請穿好走鞋子！Outlet買完可先放車上，晚點開去飯店卸貨再還車。"
       },
       {
-        day: "Day 5", date: "5/9 (四)", title: "市場尋寶，那霸深度美學",
+        day: "Day 5", date: "5/9 (六)", title: "市場尋寶，那霸深度美學",
         baseTemp: 26, link: "https://tenki.jp/forecast/10/50/9110/47211/",
         weather: { desc: "多雲涼爽", temp: "24-26°C", icon: "⛅", link: "https://tenki.jp/forecast/10/50/9110/47211/" },
         spots: [
@@ -130,7 +129,7 @@
         tips: "出遊註記：今日市區全程無車！輕裝出門最舒服，依賴單軌電車或 GO Taxi，若戰利品買太多隨時可搭車送回飯店。"
       },
       {
-        day: "Day 6", date: "5/10 (五)", title: "滿載回憶，平安返家",
+        day: "Day 6", date: "5/10 (日)", title: "滿載回憶，平安返家",
         baseTemp: 24, link: "https://tenki.jp/forecast/10/50/9110/47211/",
         weather: { desc: "晴朗", temp: "25-27°C", icon: "☀️", link: "https://tenki.jp/forecast/10/50/9110/47211/" },
         spots: [
@@ -175,12 +174,12 @@
           "幫忙媽媽檢查有沒有東西忘記拿", "在機場找一個可愛的沖繩小玩偶", "細細品嚐一口好吃的可麗露甜點", "優雅地吃完一個美味的沖繩飯糰", "緊緊抱抱媽咪說聲謝謝"
         ],
         stickers: [
-          { title: "Day 1 優雅出發", url: getDriveImage("123xM4LuVo7kSbGVicv1sDerwp2ejgpUA"), dlUrl: getDriveDownload("123xM4LuVo7kSbGVicv1sDerwp2ejgpUA") },
-          { title: "Day 2 海洋寶石", url: getDriveImage("1_fTjuNhyN5-H3_fgx2xV3Eh_8hUJmHZF"), dlUrl: getDriveDownload("1_fTjuNhyN5-H3_fgx2xV3Eh_8hUJmHZF") },
-          { title: "Day 3 浪漫見證", url: getDriveImage("1XGur3bURxXnR5YSArhdKCL65GRz9gBWz"), dlUrl: getDriveDownload("1XGur3bURxXnR5YSArhdKCL65GRz9gBWz") },
-          { title: "Day 4 花園仙子", url: getDriveImage("1pVSFTgvFVomTYrokFPJgy-SEPvMLsxee"), dlUrl: getDriveDownload("1pVSFTgvFVomTYrokFPJgy-SEPvMLsxee") },
-          { title: "Day 5 質感甜點", url: getDriveImage("18qK5KUg0Vnny9BVPTJWWy3KRuHXPK2xl"), dlUrl: getDriveDownload("18qK5KUg0Vnny9BVPTJWWy3KRuHXPK2xl") },
-          { title: "Day 6 彩虹回憶", url: getDriveImage("1sfobQf_jlPONEzKGs3UqlInke242GMVe"), dlUrl: getDriveDownload("1sfobQf_jlPONEzKGs3UqlInke242GMVe") }
+          { title: "Day 1 優雅出發", url: getDriveImage("1CwTNi9o14x2c9A_wa-3I49Wba6KO2lnB"), dlUrl: getDriveDownload("1CwTNi9o14x2c9A_wa-3I49Wba6KO2lnB") },
+          { title: "Day 2 海洋寶石", url: getDriveImage("1uH4wPTqxC5U2Zs_a8QTY68oO6J5HCPEB"), dlUrl: getDriveDownload("1uH4wPTqxC5U2Zs_a8QTY68oO6J5HCPEB") },
+          { title: "Day 3 浪漫見證", url: getDriveImage("1NYfXMQbsgQXt-a2Hf88wRZdnMDobx3z8"), dlUrl: getDriveDownload("1NYfXMQbsgQXt-a2Hf88wRZdnMDobx3z8") },
+          { title: "Day 4 花園仙子", url: getDriveImage("1QNkLpBsVn2xrfS8W0zKH85YK2pwbbQ62"), dlUrl: getDriveDownload("1QNkLpBsVn2xrfS8W0zKH85YK2pwbbQ62") },
+          { title: "Day 5 質感甜點", url: getDriveImage("1iheH9fJqeKFhwplkFrkhZfPSxAp4vBvq"), dlUrl: getDriveDownload("1iheH9fJqeKFhwplkFrkhZfPSxAp4vBvq") },
+          { title: "Day 6 彩虹回憶", url: getDriveImage("1mM7M0w3YBbfVLUGNDrED25MFdEKXGqUV"), dlUrl: getDriveDownload("1mM7M0w3YBbfVLUGNDrED25MFdEKXGqUV") }
         ]
       }
     };
@@ -408,7 +407,7 @@
           
           <div className="sticky top-0 z-50 bg-white shadow-sm rounded-b-[2rem] overflow-hidden">
             <header className="bg-[#D4A373] text-white pt-10 pb-4 px-6 relative z-10">
-              <h1 className="text-2xl font-bold mb-1 tracking-wider">魚堡婚禮沖繩之旅 V.9</h1>
+              <h1 className="text-2xl font-bold mb-1 tracking-wider">魚堡婚禮沖繩之旅 V9.2</h1>
               <p className="text-[#FDFBF7] opacity-90 text-sm">桔甯bean旅行攻略</p>
             </header>
             
@@ -521,17 +520,13 @@
                           {!isUnlocked && <i className="ph ph-lock-key absolute top-2 right-2 text-gray-400 text-lg"></i>}
                           
                           {isUnlocked ? (
-                            <div className="relative group w-full flex flex-col items-center">
-                              <img src={sticker.url} alt={sticker.title} className="w-24 h-24 object-contain mb-2 drop-shadow-sm touch-callout-default pointer-events-auto" style={{ WebkitTouchCallout: 'default' }}/>
-                              <a 
-                                href={sticker.dlUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="absolute bottom-1 right-1 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm hover:bg-white text-[#D4A373] transition-colors"
-                                title="下載貼紙"
-                              >
-                                <i className="ph-bold ph-download-simple text-lg"></i>
-                              </a>
+                            <div className="relative group w-full h-full flex flex-col items-center justify-center">
+                              <img 
+                                src={sticker.url} 
+                                alt={sticker.title} 
+                                className="w-24 h-24 object-contain mb-2 drop-shadow-sm transition-transform active:scale-95 touch-callout-default" 
+                                style={{ WebkitTouchCallout: 'default', pointerEvents: 'auto' }}
+                              />
                             </div>
                           ) : (
                             <div className="w-16 h-16 bg-gray-200 rounded-full mb-2 flex items-center justify-center text-gray-400 font-bold text-xl">?</div>
@@ -542,7 +537,7 @@
                       );
                     })}
                   </div>
-                  <p className="text-[10px] text-center mt-4 text-gray-500 font-medium">✨ 媽媽愛心特製：長按圖片即可儲存，或點擊下載圖示保留滿滿回憶！</p>
+                  <p className="text-[10px] text-center mt-4 text-gray-500 font-medium">✨ 媽媽愛心特製：直接長按圖片，就可以選擇「儲存圖片」到手機囉！</p>
                 </div>
 
                 <div className="space-y-4">
@@ -555,15 +550,15 @@
                           <h4 className="font-bold text-[#6D5D53] text-sm">Day {dayIdx + 1} 挑戰</h4>
                           <span className="text-xs font-bold text-[#A3B18A] bg-[#FAEDCD] px-2 py-1 rounded-full">{dayCompleted} / 5</span>
                         </div>
-                        <div className="space-y-3 mt-3">
+                        <div className="space-y-2 mt-3">
                           {dayTasks.map((task, tIdx) => {
                             const isDone = completedTasksArr[activeChild].includes(task);
                             return (
-                              <div key={tIdx} onClick={() => toggleTask(task)} className="flex items-start gap-3 cursor-pointer group">
+                              <div key={tIdx} onClick={() => toggleTask(task)} className="flex items-center gap-3 p-3 -mx-2 rounded-xl active:bg-gray-50 cursor-pointer group transition-colors">
                                 <div className="mt-0.5 shrink-0 transition-transform active:scale-90">
-                                  {isDone ? <i className={`ph-fill ph-check-circle text-[20px] ${currentChildData.activeColor}`}></i> : <i className="ph ph-circle text-[20px] text-[#D3C4B7] group-hover:text-[#A3B18A]"></i>}
+                                  {isDone ? <i className={`ph-fill ph-check-circle text-[22px] ${currentChildData.activeColor}`}></i> : <i className="ph ph-circle text-[22px] text-[#D3C4B7] group-hover:text-[#A3B18A]"></i>}
                                 </div>
-                                <span className={`text-xs leading-relaxed transition-all ${isDone ? 'text-gray-400 line-through' : 'text-[#6D5D53] font-medium'}`}>{task}</span>
+                                <span className={`text-sm leading-relaxed transition-all flex-1 ${isDone ? 'text-gray-400 line-through' : 'text-[#6D5D53] font-medium'}`}>{task}</span>
                               </div>
                             );
                           })}
@@ -583,7 +578,6 @@
                   <h2 className="text-xl font-bold">極簡行李清單</h2>
                 </div>
 
-                {/* 閨蜜切換 Tab */}
                 <div className="flex bg-white rounded-full p-1 border border-[#F2E8DC] shadow-sm mb-2">
                   <button onClick={() => setActivePacker('maomao')} className={`flex-1 py-2 text-sm font-bold rounded-full transition-all flex items-center justify-center gap-1 ${activePacker === 'maomao' ? 'bg-[#D4A373] text-white shadow-md' : 'text-[#8E8075]'}`}>
                     <i className="ph-fill ph-backpack"></i> Maomao 行李
@@ -601,7 +595,7 @@
                 </div>
 
                 {currentLuggage.map((category) => (
-                  <div key={category.id} className={`bg-white rounded-3xl p-5 shadow-sm border ${packTheme.borderLight} transition-colors`}>
+                  <div key={category.id} className={`bg-white rounded-3xl p-5 shadow-sm border ${packTheme.borderLight} transition-colors mb-4`}>
                     <h3 className={`font-bold ${packTheme.textTitle} flex items-center gap-2 mb-2`}><span className="text-xl">{category.icon}</span> {category.title}</h3>
                     <p className={`text-xs ${packTheme.textDesc} mb-3 pb-3 border-b ${packTheme.borderLight}`}>{category.desc}</p>
                     
@@ -682,7 +676,6 @@
               <div className="animate-fade-in space-y-5 pb-6">
                 <div className="flex items-center gap-2 mb-3 text-[#8B6E58]"><i className="ph ph-shopping-bag text-[20px]"></i><h2 className="text-xl font-bold">終極血拚戰鬥清單</h2></div>
                 
-                {/* 閨蜜切換 Tab */}
                 <div className="flex bg-white rounded-full p-1 border border-[#F2E8DC] shadow-sm mb-2">
                   <button onClick={() => setActiveShopper('maomao')} className={`flex-1 py-2 text-sm font-bold rounded-full transition-all flex items-center justify-center gap-1 ${activeShopper === 'maomao' ? 'bg-[#D4A373] text-white shadow-md' : 'text-[#8E8075]'}`}>
                     <i className="ph-fill ph-heart"></i> Maomao 清單
@@ -692,7 +685,6 @@
                   </button>
                 </div>
                 
-                {/* 互動式願望清單 */}
                 <div className={`bg-white rounded-3xl p-5 shadow-sm border-2 transition-colors ${activeShopper === 'maomao' ? 'border-[#D4A373]' : 'border-[#A3B18A]'}`}>
                   <div className="flex items-center justify-between mb-3 pb-3 border-b border-[#F2E8DC]">
                     <h3 className={`font-bold flex items-center gap-2 text-lg transition-colors ${activeShopper === 'maomao' ? 'text-[#D4A373]' : 'text-[#A3B18A]'}`}>
@@ -727,9 +719,6 @@
                         </div>
                       </li>
                     ))}
-                    {currentWishlist.length === 0 && (
-                      <div className="text-center text-xs text-gray-400 py-4">清單目前空空的喔，趕快新增想買的東西吧！</div>
-                    )}
                   </ul>
 
                   <div className="flex gap-2 pt-3 border-t border-dashed border-[#F2E8DC]">
@@ -753,12 +742,6 @@
                     <div>1. 蒟蒻果凍</div><div>2. 呼吸巧克力</div><div>3. 限定黑糖Pocky</div><div>4. 島紅椒蝦餅</div><div>5. 經典梅片/梅干</div><div>6. 味覺糖 Cororo</div><div>7. EVE 止痛藥</div><div>8. 龍角散</div><div>9. DHC 維他命C</div><div>10. 豆乳化妝水</div><div>11. 酵素洗顏粉</div><div>12. 休足時間</div><div>13. 蒸氣眼罩</div><div>14. 沖繩雪鹽</div><div>15. 泡盛小酒版</div><div>16. 沖繩紅薯塔</div><div>17. 沖繩黑糖塊</div><div>18. 兒童入浴球</div><div>19. 防蚊貼片</div><div>20. Calbee+現炸薯片</div>
                   </div>
                 </div>
-                <div className="bg-[#F0FDF4] rounded-3xl p-5 shadow-sm border border-[#BBF7D0]">
-                  <h3 className="font-bold text-[#166534] mb-3 pb-3 border-b border-[#BBF7D0] flex items-center gap-2 text-lg"><i className="ph ph-shopping-bag text-[20px]"></i>Outlet 必敗</h3>
-                  <div className="grid grid-cols-2 gap-2.5 text-[11px] text-[#14532D] font-medium">
-                    <div>1. ABC-Mart 限定鞋</div><div>2. Gap Kids 童裝</div><div>3. Ralph Lauren</div><div>4. BEAMS</div><div>5. Coach</div><div>6. Le Creuset 鑄鐵鍋</div><div>7. Adidas/Nike</div><div>8. Francfranc</div><div>9. 森林家族玩具</div><div>10. Tommy Hilfiger</div>
-                  </div>
-                </div>
               </div>
             )}
 
@@ -770,12 +753,10 @@
                   <h2 className="text-xl font-bold">管家服務與緊急聯繫</h2>
                 </div>
 
-                {/* 住宿資訊 */}
                 <div className="bg-white rounded-3xl p-5 shadow-sm border border-[#F2E8DC]">
                   <h3 className="font-bold text-[#D4A373] flex items-center gap-2 mb-3 pb-3 border-b border-[#F2E8DC] text-lg">
                     <i className="ph-fill ph-buildings"></i> 住宿地點資訊
                   </h3>
-                  
                   <div className="space-y-4">
                     <div className="bg-[#FAEDCD] bg-opacity-30 p-3 rounded-2xl">
                       <div className="flex justify-between items-start mb-1">
@@ -791,7 +772,6 @@
                         <i className="ph ph-navigation-arrow"></i> 導航至飯店
                       </a>
                     </div>
-
                     <div className="bg-[#E9EDC9] bg-opacity-30 p-3 rounded-2xl">
                       <div className="flex justify-between items-start mb-1">
                         <h4 className="font-bold text-[#5A6B41] text-sm">📍 那霸雀巢飯店 (The Nest)</h4>
@@ -809,16 +789,14 @@
                   </div>
                 </div>
 
-                {/* 航班資訊 */}
                 <div className="bg-white rounded-3xl p-5 shadow-sm border border-[#F2E8DC]">
                   <h3 className="font-bold text-[#D4A373] flex items-center gap-2 mb-3 pb-3 border-b border-[#F2E8DC] text-lg">
                     <i className="ph-fill ph-airplane-tilt"></i> 航班即時動態
                   </h3>
-                  
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between bg-blue-50 p-3 rounded-xl border border-blue-100">
                       <div>
-                        <span className="text-[10px] font-bold text-blue-500 mb-1 block">5/5 (日) 去程航班</span>
+                        <span className="text-[10px] font-bold text-blue-500 mb-1 block">5/5 (二) 去程航班</span>
                         <h4 className="font-bold text-blue-900 text-sm">華航 CI122</h4>
                         <p className="text-xs text-blue-700">TPE 17:05 ➔ OKA 19:45</p>
                       </div>
@@ -826,10 +804,9 @@
                         <i className="ph-bold ph-radar text-lg"></i>
                       </a>
                     </div>
-                    
                     <div className="flex items-center justify-between bg-orange-50 p-3 rounded-xl border border-orange-100">
                       <div>
-                        <span className="text-[10px] font-bold text-orange-500 mb-1 block">5/10 (五) 回程航班</span>
+                        <span className="text-[10px] font-bold text-orange-500 mb-1 block">5/10 (日) 回程航班</span>
                         <h4 className="font-bold text-orange-900 text-sm">華航 CI121</h4>
                         <p className="text-xs text-orange-700">OKA 11:55 ➔ TPE 12:30</p>
                       </div>
@@ -838,45 +815,22 @@
                       </a>
                     </div>
                   </div>
-                  <p className="text-[10px] text-gray-400 mt-2 text-center">點擊雷達圖示，直接開啟 Flightradar24 查看班機即時位置。</p>
                 </div>
 
-                {/* 緊急聯絡卡 */}
                 <div className="bg-[#FFF0F5] rounded-3xl p-5 shadow-sm border border-[#FBCFE8]">
                   <h3 className="font-bold text-[#BE185D] flex items-center gap-2 mb-3 pb-3 border-b border-[#FBCFE8] text-lg">
                     <i className="ph-fill ph-warning-circle"></i> 緊急聯絡平安符
                   </h3>
-                  
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-bold text-[#9D174D] text-sm mb-1">🏛️ 台北駐日經濟文化代表處 那霸分處</h4>
                       <p className="text-[11px] text-[#831843] leading-relaxed">
                         急難救助專線：<a href="tel:+819019428936" className="underline font-bold">+81-90-1942-8936</a><br/>
-                        辦公室電話：<a href="tel:+81988627008" className="underline">+81-98-862-7008</a><br/>
-                        地址：沖繩縣那霸市久茂地3-15-9 6樓
-                      </p>
-                    </div>
-
-                    <div className="border-t border-dashed border-[#FBCFE8] pt-3">
-                      <h4 className="font-bold text-[#9D174D] text-sm mb-1">🏥 距離恩納村較近之大型醫院</h4>
-                      <p className="text-[11px] text-[#831843] leading-relaxed">
-                        <span className="font-bold">沖繩縣立北部醫院 (Nago)</span><br/>
-                        電話：<a href="tel:+81980522719" className="underline">+81 980-52-2719</a><br/>
-                        <a href={getMapLink("沖繩縣立北部病院")} target="_blank" className="text-[#BE185D] flex items-center gap-1 mt-1 hover:underline"><i className="ph ph-map-pin"></i> 開啟地圖導航</a>
-                      </p>
-                    </div>
-
-                    <div className="border-t border-dashed border-[#FBCFE8] pt-3">
-                      <h4 className="font-bold text-[#9D174D] text-sm mb-1">🏥 距離那霸市區較近之大型醫院</h4>
-                      <p className="text-[11px] text-[#831843] leading-relaxed">
-                        <span className="font-bold">沖繩赤十字病院 (Okinawa Red Cross Hospital)</span><br/>
-                        電話：<a href="tel:+81988533134" className="underline">+81 98-853-3134</a><br/>
-                        <a href={getMapLink("沖縄赤十字病院")} target="_blank" className="text-[#BE185D] flex items-center gap-1 mt-1 hover:underline"><i className="ph ph-map-pin"></i> 開啟地圖導航</a>
+                        辦公室電話：<a href="tel:+81988627008" className="underline">+81-98-862-7008</a>
                       </p>
                     </div>
                   </div>
                 </div>
-
               </div>
             )}
           </main>
