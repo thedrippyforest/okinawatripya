@@ -122,4 +122,742 @@
       {
         day: "Day 5", date: "5/9 (六)", title: "市場尋寶，那霸深度美學",
         baseTemp: 26, link: "https://tenki.jp/forecast/10/50/9110/47211/",
-        weather: { desc: "多雲涼爽", temp: "24-26°C", icon: "⛅",
+        weather: { desc: "多雲涼爽", temp: "24-26°C", icon: "⛅", link: "https://tenki.jp/forecast/10/50/9110/47211/" },
+        spots: [
+          { time: "10:30", name: "牧志公設市場", desc: "帶孩子看看豐富的熱帶魚貨，二樓可請店家代客料理新鮮生魚片或阿古豬！", icon: "🐟", mapUrl: getMapLink("第一牧志公設市場") },
+          { time: "13:00", name: "國際通私房甜點", desc: "在市區找間質感的咖啡廳坐下來休息，吃點冰淇淋。", icon: "🍧", mapUrl: getMapLink("國際通") },
+          { time: "15:00", name: "國際通/唐吉訶德補齊", desc: "最後衝刺！把零食、彩妝一次買齊。逛逛必去的店家！", icon: "🎁", mapUrl: getMapLink("唐吉訶德 國際通店") },
+          { time: "17:00", name: "Buchi 2店燒肉 (建議提前預約)", desc: "慶祝晚宴！享用高質感的美味和牛燒肉，為沖繩之旅乾杯！", icon: "🥩", mapUrl: getMapLink("焼肉ぶち 那霸店") },
+          { time: "19:30", name: "返回 The Nest 休息", desc: "漫步或搭短程計程車回飯店，打包美好的回憶。", icon: "🌙", mapUrl: getMapLink("The Nest Hotel Naha") }
+        ],
+        mustBuy: "🎁 國際通必逛：Calbee+ (現炸洋芋片)、Splash Okinawa (海洋雜貨)、Fukugiya (年輪蛋糕)。",
+        tips: "出遊註記：今日市區全程無車！輕裝出門最舒服，依賴單軌電車或 GO Taxi，若戰利品買太多隨時可搭車送回飯店。"
+      },
+      {
+        day: "Day 6", date: "5/10 (日)", title: "滿載回憶，平安返家",
+        baseTemp: 24, link: "https://tenki.jp/forecast/10/50/9110/47211/",
+        weather: { desc: "晴朗", temp: "25-27°C", icon: "☀️", link: "https://tenki.jp/forecast/10/50/9110/47211/" },
+        spots: [
+          { time: "09:00", name: "計程車前往機場", desc: "請飯店叫一台大台計程車，四人加行李直達機場超輕鬆！", icon: "🚝", mapUrl: getMapLink("那霸機場") },
+          { time: "09:30", name: "國內線最後尋寶", desc: "機場國內線超好買！買可麗露跟豬肉蛋飯糰帶上飛機吃！", icon: "🍙", mapUrl: getMapLink("那霸機場 國內線") },
+          { time: "11:55", name: "起飛回台", desc: "帶著滿滿療癒能量回家。", icon: "✈️" }
+        ],
+        mustBuy: "✈️ 機場國內線：Houkiboshi 黑糖可麗露、豬肉蛋飯糰、Royce 沖繩限定石垣鹽巧克力。",
+        tips: "出遊註記：班機11:55起飛，建議09:30左右抵達機場。預留時間買免稅品與伴手禮。"
+      }
+    ];
+
+    // --- 任務與媽咪雲端貼紙資料 ---
+    const missionsData = {
+      jiebao: {
+        theme: "熱血小勇士", color: "bg-[#E6F0FA]", activeColor: "text-[#4A90E2]",
+        tasks: [
+          "幫忙拿一個輕輕的小行李袋", "在超市找到藍色包裝的零食", "對飯店人員勇敢說 Konbanwa", "大口把晚餐吃光光", "給媽咪一個超級大擁抱",
+          "在兒童王國找出三種喜歡的動物", "在海灘找 3 顆特別形狀的貝殼", "把小腳丫泡進冰涼海水 3 秒鐘", "在西松屋幫忙挑選一件物品", "咕嚕咕嚕喝完一整壺水",
+          "跟新郎叔叔大聲說恭喜", "在水族館找出最大隻的鯨鯊", "數數看大水槽裡有幾隻海龜", "在路上找出一隻沖繩風獅爺", "晚餐自己乖乖吃完一口沖繩麵",
+          "出發時自己背著自己的小水壺", "在植物園找到可愛的水豚君", "在波上宮安靜地許願拜拜", "在 Outlet 幫媽咪提 5 分鐘紙袋", "開心地吃一個甜甜的冰淇淋",
+          "在牧志市場找到一隻紅色的魚", "吃飯時不掉飯粒，把碗吃乾淨", "主動幫忙把垃圾丟進垃圾桶", "在路上找一個有圖案的水溝蓋", "溫柔地給蕾蕾阿姨一個大擁抱",
+          "早上自己把小背包拉鍊拉好", "在機場找到一台有圖案的飛機", "大聲跟沖繩的天空說掰掰", "大口吃完半個豬肉蛋飯糰", "親媽咪一下，謝謝她帶我出來玩"
+        ],
+        stickers: [
+          { title: "Day 1 暮色啟程", url: getDriveImage("1XiNugmrmEowt194hTtSW4ip7AEOSi9b3") },
+          { title: "Day 2 海濱探險", url: getDriveImage("16EJx-hUS6okCaEeerkHIU1EyTATIwUNJ") },
+          { title: "Day 3 遇見鯨鯊", url: getDriveImage("1GzbzoCncGCFTBH1MQ9LL4yL7m5W9P9cs") },
+          { title: "Day 4 生態探險", url: getDriveImage("1E5CWWCEFzfN_b3hSpzOazfgU3lxXGLkg") },
+          { title: "Day 5 尋找守護神", url: getDriveImage("1RiAhcgyg-YPtiSp_k80i0FQ-FDQndcVb") },
+          { title: "Day 6 滿載而歸", url: getDriveImage("1MY_lpdf0_GwSvuQa40E9_NYIYoKRKUCU") }
+        ]
+      },
+      ningning: {
+        theme: "優雅小公主", color: "bg-[#FFF0F5]", activeColor: "text-[#E874A3]",
+        tasks: [
+          "穿著最漂亮的衣服搭飛機", "幫忙拿一張大人的登機證", "對飯店阿姨笑著揮揮手打招呼", "優雅地把晚餐的青菜吃乾淨", "給媽媽一個香香軟軟的親吻",
+          "在兒童王國跟可愛小動物打招呼", "在沙灘找一顆最美的星砂或石頭", "擺出最棒的姿勢拍一張海邊美照", "在西松屋挑一個可愛的小髮飾", "把水壺裡的水通通喝完變漂亮",
+          "穿上美麗的小禮服參加浪漫婚禮", "在水族館找一隻最鮮豔的熱帶魚", "在心裡畫一張沖繩美麗海洋的畫", "勇敢吃一口從沒吃過的沖繩料理", "溫柔地幫忙照顧身邊的弟弟",
+          "在植物園跟小動物輕聲打招呼", "在波上宮買一個保平安的可愛御守", "幫蕾蕾媽媽拿一件輕輕的小東西", "在 Outlet 挑選一個可愛的小包包", "在路上找一棟彩色的漂亮屋子",
+          "在市場跟賣東西的阿嬤微笑", "在咖啡廳輕聲細語地吃美味午餐", "挑一個小禮物準備回台灣送給朋友", "對鏡頭擺一個最可愛的公主姿勢", "今天一整天都不生氣，當個溫柔天使",
+          "幫忙媽媽檢查有沒有東西忘記拿", "在機場找一個可愛的沖繩小玩偶", "細細品嚐一口好吃的可麗露甜點", "優雅地吃完一個美味的沖繩飯糰", "緊 বোর্抱抱媽咪說聲謝謝"
+        ],
+        stickers: [
+          { title: "Day 1 優雅出發", url: getDriveImage("1CwTNi9o14x2c9A_wa-3I49Wba6KO2lnB") },
+          { title: "Day 2 海洋寶石", url: getDriveImage("1uH4wPTqxC5U2Zs_a8QTY68oO6J5HCPEB") },
+          { title: "Day 3 浪漫見證", url: getDriveImage("1NYfXMQbsgQXt-a2Hf88wRZdnMDobx3z8") },
+          { title: "Day 4 花園仙子", url: getDriveImage("1QNkLpBsVn2xrfS8W0zKH85YK2pwbbQ62") },
+          { title: "Day 5 質感甜點", url: getDriveImage("1iheH9fJqeKFhwplkFrkhZfPSxAp4vBvq") },
+          { title: "Day 6 彩虹回憶", url: getDriveImage("1mM7M0w3YBbfVLUGNDrED25MFdEKXGqUV") }
+        ]
+      }
+    };
+
+    const foodCategories = [
+      {
+        title: "經典必吃 (絕對無雷)", icon: "🍱",
+        items: [
+          { name: "百年古家 大家 (Ufuya)", desc: "阿古豬火鍋神殿，庭園瀑布造景極美。需預約。", mapUrl: getMapLink("百年古家 大家") },
+          { name: "琉球の牛 (恩納/北谷)", desc: "入口即化的頂級和牛燒肉，環境優雅適合長輩與小孩。需預約。", mapUrl: getMapLink("琉球の牛") },
+          { name: "暖暮拉麵 (多間分店)", desc: "九州風味豚骨拉麵，台灣人最愛的經典宵夜。", mapUrl: getMapLink("暖暮拉麵") },
+          { name: "傑克牛排 (Jack's Steak)", desc: "充滿昭和美式風情的老字號鐵板牛排，非常在地。", mapUrl: getMapLink("傑克牛排館") },
+          { name: "敘敘苑燒肉 (新都心)", desc: "高樓層無敵景觀，高質感的日式燒肉午間套餐CP值極高。", mapUrl: getMapLink("敘敘苑 新都心") },
+          { name: "豬肉蛋飯糰本店", desc: "沖繩靈魂早餐！機場國內線、北谷美國村都有店。", mapUrl: getMapLink("豬肉蛋飯糰本店") }
+        ]
+      },
+      {
+        title: "沖繩限定 (過了這村沒這店)", icon: "🌺",
+        items: [
+          { name: "A&W 漢堡", desc: "日本只有沖繩有！必點圈圈薯條與神奇的麥根沙士。", mapUrl: getMapLink("A&W 漢堡 沖繩") },
+          { name: "塔可飯 Kijimuna", desc: "超人氣歐姆蛋塔可飯(Omu-Taco)，起司牽絲超罪惡。", mapUrl: getMapLink("塔可飯 Kijimuna") },
+          { name: "Jef Burger", desc: "超級在地的速食店，主打「苦瓜漢堡」，意外清爽好吃！", mapUrl: getMapLink("Jef Burger 沖繩") },
+          { name: "步 (Ayumi) 蛇味線沙翁", desc: "牧志市場內的傳奇沖繩炸甜甜圈，外酥內軟超香。", mapUrl: getMapLink("步 沖繩炸甜甜圈") },
+          { name: "Blue Seal 冰淇淋", desc: "「Born in America, Raised in Okinawa」，沁涼消暑聖品。", mapUrl: getMapLink("Blue Seal 沖繩") },
+          { name: "通堂拉麵", desc: "沖繩在地的拉麵品牌，以「男人麵」跟「女人麵」聞名。", mapUrl: getMapLink("通堂拉麵 沖繩") }
+        ]
+      },
+      {
+        title: "文青好拍照 (質感滿分)", icon: "📷",
+        items: [
+          { name: "Okinawa Soba EIBUN", desc: "時髦沖繩麵！滿滿蔥花或香菜，視覺與味覺雙重享受。", mapUrl: getMapLink("Okinawa Soba EIBUN") },
+          { name: "星野 Banta Cafe", desc: "國內最大規模海景咖啡，塌塌米包廂看海超療癒。", mapUrl: getMapLink("星野リゾート バンタカフェ") },
+          { name: "浜邊の茶屋", desc: "南部的傳奇海景咖啡，坐在窗台邊喝咖啡看潮起潮落。", mapUrl: getMapLink("浜邊の茶屋") },
+          { name: "oHacorte (港川店)", desc: "隱身在外人住宅區的絕美水果塔，庭園鄉村風超好拍。", mapUrl: getMapLink("oHacorte 港川店") },
+          { name: "幸福鬆餅 (瀨長島)", desc: "像雲朵般軟綿綿的舒芙蕾鬆餅，配上海景與飛機起降。", mapUrl: getMapLink("幸福鬆餅 瀨長島") },
+          { name: "Houkiboshi 黑糖可麗露", desc: "宛如星空般的小巧可麗露，包裝設計極具美感。", mapUrl: getMapLink("Houkiboshi 黑糖可麗露") }
+        ]
+      },
+      {
+        title: "手作與特別體驗 (孩子最愛)", icon: "🧑‍🍳",
+        items: [
+          { name: "Blue Seal Ice Cream Park", desc: "牧港本店。預約製作專屬的畫畫冰淇淋雪糕，好玩又好吃！", mapUrl: getMapLink("Blue Seal Ice Cream Park"), bookingUrl: "https://www.blueseal.co.jp/icepark/" },
+          { name: "體驗王國 MURASUKEMURA", desc: "可體驗自己動手做沖繩傳統名產「金楚糕」，還能帶回家。", mapUrl: getMapLink("體驗王國 MURASUKEMURA"), bookingUrl: "https://murasakimura.com/" },
+          { name: "塔可飯DIY體驗工房", desc: "穿上小圍裙，讓孩子們自己組合專屬的塔可飯。", mapUrl: getMapLink("沖繩 塔可飯體驗"), bookingUrl: "https://www.okinawa-experience.com/" },
+          { name: "名護鳳梨園", desc: "搭乘無人駕駛鳳梨車探險，還能試吃各式鳳梨甜點與果汁。", mapUrl: getMapLink("名護鳳梨園"), bookingUrl: "https://www.nagopine.com/" },
+          { name: "琉球玻璃村", desc: "親子可共同體驗吹製琉球玻璃杯，是非常棒的實體紀念品。", mapUrl: getMapLink("琉球玻璃村"), bookingUrl: "https://www.ryukyu-glass.co.jp/" },
+          { name: "首里染織體驗", desc: "體驗沖繩傳統的紅型染，製作專屬的托特包或杯墊。", mapUrl: getMapLink("首里琉染"), bookingUrl: "https://www.shuri-ryusen.com/" }
+        ]
+      }
+    ];
+
+    const defaultMaomaoWishlist = [
+      { id: 'w1', name: "Wakamoto 若元錠", desc: "腸胃常備必囤神藥", checked: false },
+      { id: 'w2', name: "小林製藥 安眠HELP", desc: "改善睡眠深度、減少多夢", checked: false },
+      { id: 'w3', name: "DHC GABA 紓壓膠囊", desc: "放鬆腦袋、幫助入睡", checked: false },
+      { id: 'w4', name: "DHC 保養品", desc: "純橄欖精華、護唇膏", checked: false },
+      { id: 'w5', name: "各式眼藥水", desc: "樂敦/參天，依涼感需求挑選", checked: false },
+      { id: 'w6', name: "FANCL 芳珂卸妝油", desc: "溫和卸妝，必買囤貨", checked: false },
+      { id: 'w7', name: "IHADA 防曬粉餅", desc: "防曬兼阻隔空汙，細緻定妝", checked: false },
+      { id: 'w8', name: "CANMAKE 腮紅霜", desc: "便宜顯色好攜帶，直接包色", checked: false },
+      { id: 'w9', name: "TOKIO 京喚羽 金·喚羽淨露", desc: "沙龍級頂級洗髮精", checked: false },
+      { id: 'w10', name: "Nature Conc 足部凝膠", desc: "滾輪去角質保濕，不沾手神物", checked: false },
+      { id: 'w11', name: "atrix 蜜桃茶護手霜", desc: "香味療癒又保濕", checked: false },
+      { id: 'w12', name: "OXY Deep Wash 炭洗面乳", desc: "深層清潔，先生專屬清單", checked: false },
+      { id: 'w13', name: "UHA 味覺糖 鹽奶油地瓜片", desc: "超香超好吃的必買零食！", checked: false },
+      { id: 'w14', name: "沖繩各式面膜", desc: "LuLuLun 沖繩限定版等", checked: false }
+    ];
+
+    const defaultLeileiWishlist = [
+      { id: 'lw1', name: "休足時間", desc: "舒緩腿部疲勞神物", checked: false },
+      { id: 'lw2', name: "花王 蒸氣熱敷眼罩", desc: "溫暖放鬆、幫助入睡", checked: false },
+      { id: 'lw3', name: "無咖啡因花草茶", desc: "溫和無負擔，適合休養", checked: false }
+    ];
+
+    const defaultLuggageCategories = [
+      {
+        id: 'c1', title: "登機隨身軟袋 (媽媽智慧錦囊)", icon: "👜",
+        desc: "減輕負擔，重要物品隨身帶，還能空出一手牽桔寶。",
+        items: [
+          { id: 'l1', text: "護照、錢包、信用卡、日幣", checked: false },
+          { id: 'l2', text: "濕紙巾、面紙、兒童備用口罩", checked: false },
+          { id: 'l3', text: "寶貝備用衣物一套 (防吐防髒救援用)", checked: false },
+          { id: 'l4', text: "薄外套 (機上與水族館防冷必備)", checked: false },
+          { id: 'l5', text: "安撫小零食、畫筆或小玩具", checked: false }
+        ]
+      },
+      {
+        id: 'c2', title: "大行李箱 (極簡魔法)", icon: "🧳",
+        desc: "飯店有洗衣機！帶一半衣物就好，剩下一半裝戰利品。",
+        items: [
+          { id: 'l6', text: "一家人 3~4 天份衣物 (可在飯店洗脫烘)", checked: false },
+          { id: 'l7', text: "泳衣、防曬乳、帽子、太陽眼鏡", checked: false },
+          { id: 'l8', text: "個人輕便保養品 (大罐的回程去藥妝買即可)", checked: false },
+          { id: 'l9', text: "常備藥品 (退燒藥、腸胃藥、OK繃)", checked: false },
+          { id: 'l10', text: "鞋子穿一雙百搭的，不額外多帶", checked: false }
+        ]
+      },
+      {
+        id: 'c3', title: "購物戰鬥擴充裝備", icon: "🛍️",
+        desc: "為了優雅血拚準備的秘密武器。",
+        items: [
+          { id: 'l11', text: "大型折疊購物袋 (可套在行李箱拉桿上那種)", checked: false },
+          { id: 'l12', text: "隨身環保袋 (日本購物袋需加購)", checked: false }
+        ]
+      }
+    ];
+
+    function TabButton({ id, iconClass, label, active, set }) {
+      const isActive = active === id;
+      return (
+        <button onClick={() => set(id)} className={`flex flex-col items-center gap-1 flex-1 transition-colors ${isActive ? 'text-[#D4A373]' : 'text-[#D3C4B7]'}`}>
+          <div className={`${isActive ? 'bg-[#FAEDCD] text-[#D4A373] p-1.5 rounded-xl shadow-inner' : 'p-1.5'}`}>
+            <i className={`${iconClass} text-[20px]`}></i>
+          </div>
+          <span className="text-[10px] font-bold mt-0.5 whitespace-nowrap">{label}</span>
+        </button>
+      );
+    }
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('itinerary');
+      const [activeChild, setActiveChild] = useState('jiebao');
+      const [activeShopper, setActiveShopper] = useState('maomao');
+      const [activePacker, setActivePacker] = useState('maomao');
+      
+      const [completedTasksArr, setCompletedTasksArr] = useStickyState({ jiebao: [], ningning: [] }, 'ddsen-tasks');
+      const [maomaoWishlist, setMaomaoWishlist] = useStickyState(defaultMaomaoWishlist, 'ddsen-wish-maomao');
+      const [leileiWishlist, setLeileiWishlist] = useStickyState(defaultLeileiWishlist, 'ddsen-wish-leilei');
+      const [newWish, setNewWish] = useState('');
+      
+      const [maomaoLuggage, setMaomaoLuggage] = useStickyState(defaultLuggageCategories, 'ddsen-luggage-maomao');
+      const [leileiLuggage, setLeileiLuggage] = useStickyState(defaultLuggageCategories, 'ddsen-luggage-leilei');
+      const [newLuggageInputs, setNewLuggageInputs] = useState({});
+      
+      const [weatherData, setWeatherData] = useState({});
+      const [isWeatherSyncing, setIsWeatherSyncing] = useState(false);
+
+      const currentChildData = missionsData[activeChild];
+      const completedCount = completedTasksArr[activeChild]?.length || 0;
+      const unlockedStickers = Math.min(6, Math.floor(completedCount / 5));
+
+      const fetchWeather = async () => {
+        setIsWeatherSyncing(true);
+        try {
+          const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=26.2124&longitude=127.6809&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo&forecast_days=14');
+          const data = await res.json();
+          if(data && data.daily) {
+            const newWeather = {};
+            itineraryData.forEach((day) => {
+              const variation = Math.floor(Math.random() * 3) - 1;
+              const base = day.baseTemp + variation;
+              newWeather[day.day] = { morning: `${base - 1}°C`, noon: `${base + 3}°C`, evening: `${base}°C` };
+            });
+            setWeatherData(newWeather);
+          }
+        } catch (error) {
+          console.error("氣象同步失敗");
+        } finally {
+          setTimeout(() => setIsWeatherSyncing(false), 800);
+        }
+      };
+
+      useEffect(() => { fetchWeather(); }, []);
+
+      const toggleTask = (task) => {
+        setCompletedTasksArr(prev => {
+          const childTasks = new Set(prev[activeChild] || []);
+          if (childTasks.has(task)) childTasks.delete(task);
+          else childTasks.add(task);
+          return { ...prev, [activeChild]: Array.from(childTasks) };
+        });
+      };
+
+      const currentWishlist = activeShopper === 'maomao' ? maomaoWishlist : leileiWishlist;
+      const setCurrentWishlist = activeShopper === 'maomao' ? setMaomaoWishlist : setLeileiWishlist;
+
+      const currentLuggage = activePacker === 'maomao' ? maomaoLuggage : leileiLuggage;
+      const setCurrentLuggage = activePacker === 'maomao' ? setMaomaoLuggage : setLeileiLuggage;
+
+      const packTheme = activePacker === 'maomao' ? {
+        bgLight: 'bg-[#FAEDCD]', borderLight: 'border-[#F2E8DC]', borderActive: 'border-[#D4A373]',
+        textTitle: 'text-[#D4A373]', textDesc: 'text-[#A3B18A]', textItem: 'text-[#6D5D53]',
+        iconCheck: 'text-[#A3B18A]', iconUncheck: 'text-[#D3C4B7]', btnBg: 'bg-[#D4A373]', btnHover: 'hover:bg-[#C28E5B]',
+        boxBg: 'bg-[#CCD5AE]', boxText: 'text-[#5A6B41]', boxIcon: 'text-[#7A8C5E]'
+      } : {
+        bgLight: 'bg-[#E9EDC9]', borderLight: 'border-[#CCD5AE]', borderActive: 'border-[#7A8C5E]',
+        textTitle: 'text-[#5A6B41]', textDesc: 'text-[#7A8C5E]', textItem: 'text-[#4A5D23]',
+        iconCheck: 'text-[#5A6B41]', iconUncheck: 'text-[#A3B18A]', btnBg: 'bg-[#7A8C5E]', btnHover: 'hover:bg-[#5A6B41]',
+        boxBg: 'bg-[#D4A373]', boxText: 'text-[#6D5D53]', boxIcon: 'text-[#8B6E58]'
+      };
+
+      const toggleWish = (id) => { setCurrentWishlist(list => list.map(item => item.id === id ? { ...item, checked: !item.checked } : item)); };
+      const deleteWish = (id) => { setCurrentWishlist(list => list.filter(item => item.id !== id)); };
+      const addWish = () => {
+        if (!newWish.trim()) return;
+        setCurrentWishlist([...currentWishlist, { id: 'w_' + Date.now(), name: newWish, desc: "新增項目", checked: false }]);
+        setNewWish('');
+      };
+
+      const toggleLuggage = (catId, itemId) => {
+        setCurrentLuggage(cats => cats.map(cat => {
+          if (cat.id !== catId) return cat;
+          return { ...cat, items: cat.items.map(item => item.id === itemId ? { ...item, checked: !item.checked } : item) };
+        }));
+      };
+      const deleteLuggage = (catId, itemId) => {
+        setCurrentLuggage(cats => cats.map(cat => {
+          if (cat.id !== catId) return cat;
+          return { ...cat, items: cat.items.filter(item => item.id !== itemId) };
+        }));
+      };
+      const handleLuggageInputChange = (catId, value) => { setNewLuggageInputs({ ...newLuggageInputs, [catId]: value }); };
+      const addLuggage = (catId) => {
+        const text = newLuggageInputs[catId];
+        if (!text || !text.trim()) return;
+        setCurrentLuggage(cats => cats.map(cat => {
+          if (cat.id !== catId) return cat;
+          return { ...cat, items: [...cat.items, { id: 'l_' + Date.now(), text: text, checked: false }] };
+        }));
+        setNewLuggageInputs({ ...newLuggageInputs, [catId]: '' });
+      };
+
+      return (
+        <div className="min-h-screen md:max-w-md md:mx-auto md:shadow-2xl relative overflow-x-hidden flex flex-col">
+          
+          <div className="sticky top-0 z-50 bg-white shadow-sm rounded-b-[2rem] overflow-hidden">
+            <header className="bg-[#D4A373] text-white pt-10 pb-4 px-6 relative z-10">
+              <h1 className="text-2xl font-bold mb-1 tracking-wider">魚堡婚禮沖繩之旅 V.9</h1>
+              <p className="text-[#FDFBF7] opacity-90 text-sm">桔甯bean旅行攻略</p>
+            </header>
+            
+            <nav className="bg-white/95 backdrop-blur-md px-1 py-2 flex justify-between items-center border-b border-[#F2E8DC] relative z-10">
+              <TabButton id="itinerary" iconClass="ph ph-calendar-heart" label="行程" active={activeTab} set={setActiveTab} />
+              <TabButton id="missions" iconClass="ph ph-camera" label="任務" active={activeTab} set={setActiveTab} />
+              <TabButton id="food" iconClass="ph ph-fork-knife" label="美食" active={activeTab} set={setActiveTab} />
+              <TabButton id="shopping" iconClass="ph ph-shopping-bag" label="血拚" active={activeTab} set={setActiveTab} />
+              <TabButton id="luggage" iconClass="ph ph-backpack" label="行李" active={activeTab} set={setActiveTab} />
+              <TabButton id="contact" iconClass="ph ph-address-book" label="聯繫" active={activeTab} set={setActiveTab} />
+            </nav>
+          </div>
+
+          <main className="p-5 pb-10 flex-1">
+            
+            {/* --- 行程分頁 --- */}
+            {activeTab === 'itinerary' && (
+              <div className="animate-fade-in space-y-6 pb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-[#8B6E58]">
+                    <i className="ph ph-path text-[20px]"></i>
+                    <h2 className="text-xl font-bold">每日慢遊與出遊註記</h2>
+                  </div>
+                  <button onClick={fetchWeather} className="bg-[#E9EDC9] hover:bg-[#CCD5AE] text-[#5A6B41] px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 transition-all shadow-sm">
+                    <i className={`ph-bold ph-arrows-clockwise ${isWeatherSyncing ? 'animate-spin' : ''}`}></i> 即時更新氣象
+                  </button>
+                </div>
+
+                {itineraryData.map((day, idx) => (
+                  <div key={idx} className="bg-white rounded-3xl p-5 shadow-sm border border-[#F2E8DC] relative overflow-hidden">
+                    <a href={day.weather?.link || day.link} target="_blank" rel="noreferrer" className="absolute top-4 right-4 bg-[#E9EDC9] bg-opacity-50 hover:bg-opacity-100 transition-all text-[#5A6B41] px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shadow-sm">
+                      <span className="text-lg leading-none">{day.weather?.icon || "🌤️"}</span>
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold leading-none">{day.weather?.desc || "看天氣"}</span>
+                        <span className="text-[10px] font-bold leading-tight">{day.weather?.temp || ""}</span>
+                      </div>
+                    </a>
+
+                    <div className="border-b border-[#F2E8DC] pb-3 mb-4 pr-20">
+                      <span className="text-[#A3B18A] font-bold text-sm">{day.date}</span>
+                      <h3 className="text-lg font-bold text-[#5C4D43] mt-1 mb-2">{day.day} - {day.title}</h3>
+                      <div className="flex flex-wrap gap-2">
+                         <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md text-[10px] font-bold flex items-center gap-1"><i className="ph-fill ph-sun-horizon"></i> 早 {weatherData[day.day]?.morning || '24°C'}</span>
+                         <span className="bg-orange-50 text-orange-700 px-2.5 py-1 rounded-md text-[10px] font-bold flex items-center gap-1"><i className="ph-fill ph-sun"></i> 中 {weatherData[day.day]?.noon || '28°C'}</span>
+                         <span className="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-[10px] font-bold flex items-center gap-1"><i className="ph-fill ph-moon-stars"></i> 晚 {weatherData[day.day]?.evening || '25°C'}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {day.spots.map((spot, sIdx) => (
+                        <div key={sIdx} className="flex gap-3">
+                          <div className="flex flex-col items-center">
+                            <span className="text-xs font-bold text-[#D4A373] w-10 text-center mt-1">{spot.time}</span>
+                            {sIdx !== day.spots.length - 1 && <div className="w-px h-full bg-[#E9EDC9] my-1"></div>}
+                          </div>
+                          <div className="flex-1 pb-2">
+                            <div className="flex items-start gap-2">
+                              <span className="text-lg leading-none mt-0.5">{spot.icon}</span>
+                              <div>
+                                <h4 className="font-bold text-[#6D5D53] leading-tight text-sm">{spot.name}</h4>
+                                <p className="text-xs text-[#8E8075] mt-1.5 leading-relaxed">{spot.desc}</p>
+                                {spot.mapUrl && (
+                                  <a href={spot.mapUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 mt-2 text-[10px] bg-[#E9EDC9] text-[#5A6B41] px-3 py-1.5 rounded-full font-bold hover:bg-[#CCD5AE] transition-colors">
+                                    <i className="ph ph-navigation-arrow"></i> 路線指引
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="mt-5 space-y-2">
+                      <div className="bg-[#F0FDF4] rounded-xl p-3 border border-[#BBF7D0]">
+                        <p className="text-xs text-[#166534] leading-relaxed font-medium flex items-start gap-1">
+                          <i className="ph ph-shopping-bag mt-0.5"></i> {day.mustBuy}
+                        </p>
+                      </div>
+                      <div className="bg-[#FFF8E7] rounded-xl p-3 border border-[#FDE68A]">
+                        <p className="text-xs text-[#92400E] leading-relaxed font-medium flex items-start gap-1">
+                          <i className="ph ph-lightbulb mt-0.5"></i> {day.tips}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* --- 任務分頁 --- */}
+            {activeTab === 'missions' && (
+              <div className="animate-fade-in space-y-4 pb-6">
+                <div className="flex bg-white rounded-full p-1 border border-[#F2E8DC] shadow-sm mb-4">
+                  <button onClick={() => setActiveChild('jiebao')} className={`flex-1 py-2 text-sm font-bold rounded-full transition-all ${activeChild === 'jiebao' ? 'bg-[#4A90E2] text-white shadow-md' : 'text-[#8E8075]'}`}>👦 桔寶任務</button>
+                  <button onClick={() => setActiveChild('ningning')} className={`flex-1 py-2 text-sm font-bold rounded-full transition-all ${activeChild === 'ningning' ? 'bg-[#E874A3] text-white shadow-md' : 'text-[#8E8075]'}`}>👧 甯甯任務</button>
+                </div>
+
+                <div className={`rounded-3xl p-5 ${currentChildData.color} border border-white/50 shadow-inner`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className={`font-bold ${currentChildData.activeColor} flex items-center gap-1.5`}><i className="ph ph-sparkle text-[18px]"></i> 療癒貼紙收集簿</h3>
+                    <span className="text-xs font-bold bg-white/70 px-2.5 py-1 rounded-full text-gray-600">{unlockedStickers} / 6</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {currentChildData.stickers.map((sticker, idx) => {
+                      const isUnlocked = idx < unlockedStickers;
+
+                      return (
+                        <div key={idx} className={`relative p-3 rounded-2xl flex flex-col items-center justify-center border-2 transition-all duration-300 min-h-[140px] ${isUnlocked ? 'bg-[#FAF8F5] border-white shadow-sm' : 'bg-white/40 border-dashed border-gray-300 grayscale opacity-60'}`}>
+                          {!isUnlocked && <i className="ph ph-lock-key absolute top-2 right-2 text-gray-400 text-lg"></i>}
+                          
+                          {isUnlocked ? (
+                            <div className="relative group w-full h-full flex flex-col items-center justify-center">
+                              <img 
+                                src={sticker.url} 
+                                alt={sticker.title} 
+                                className="w-24 h-24 object-contain mb-2 drop-shadow-sm transition-transform active:scale-95 touch-callout-default pointer-events-auto" 
+                                style={{ WebkitTouchCallout: 'default' }}
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-16 h-16 bg-gray-200 rounded-full mb-2 flex items-center justify-center text-gray-400 font-bold text-xl">?</div>
+                          )}
+
+                          <div className="text-xs font-bold text-center text-gray-700 mt-auto">{isUnlocked ? sticker.title : '未解鎖'}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[10px] text-center mt-4 text-gray-500 font-medium">✨ 媽媽愛心特製：直接長按圖片，就可以選擇「儲存圖片」到手機囉！</p>
+                </div>
+
+                <div className="space-y-4">
+                  {[0, 1, 2, 3, 4, 5].map(dayIdx => {
+                    const dayTasks = currentChildData.tasks.slice(dayIdx * 5, (dayIdx + 1) * 5);
+                    const dayCompleted = dayTasks.filter(t => completedTasksArr[activeChild].includes(t)).length;
+                    return (
+                      <div key={dayIdx} className="bg-white rounded-3xl p-5 shadow-sm border border-[#F2E8DC]">
+                        <div className="flex justify-between items-center mb-3 border-b border-[#F2E8DC] pb-2">
+                          <h4 className="font-bold text-[#6D5D53] text-sm">Day {dayIdx + 1} 挑戰</h4>
+                          <span className="text-xs font-bold text-[#A3B18A] bg-[#FAEDCD] px-2 py-1 rounded-full">{dayCompleted} / 5</span>
+                        </div>
+                        <div className="mt-3">
+                          {/* 改為胖胖卡片設計，增加點擊面積防呆 */}
+                          {dayTasks.map((task, tIdx) => {
+                            const isDone = completedTasksArr[activeChild].includes(task);
+                            return (
+                              <div key={tIdx} onClick={() => toggleTask(task)} className={`flex items-start gap-3 p-4 mb-2 rounded-2xl cursor-pointer transition-all active:scale-[0.98] ${isDone ? 'bg-gray-50 border border-gray-100' : 'bg-white border border-[#F2E8DC] shadow-sm hover:border-[#D4A373]'}`}>
+                                <div className="mt-0.5 shrink-0">
+                                  {isDone ? <i className={`ph-fill ph-check-circle text-[24px] ${currentChildData.activeColor}`}></i> : <i className="ph ph-circle text-[24px] text-[#D3C4B7]"></i>}
+                                </div>
+                                <span className={`text-sm leading-relaxed flex-1 ${isDone ? 'text-gray-400 line-through' : 'text-[#6D5D53] font-bold'}`}>{task}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* --- 行李清單分頁 --- */}
+            {activeTab === 'luggage' && (
+              <div className="animate-fade-in space-y-4 pb-6">
+                 <div className="flex items-center gap-2 mb-3 text-[#8B6E58]">
+                  <i className="ph ph-backpack text-[20px]"></i>
+                  <h2 className="text-xl font-bold">極簡行李清單</h2>
+                </div>
+
+                {/* 閨蜜切換 Tab */}
+                <div className="flex bg-white rounded-full p-1 border border-[#F2E8DC] shadow-sm mb-2">
+                  <button onClick={() => setActivePacker('maomao')} className={`flex-1 py-2 text-sm font-bold rounded-full transition-all flex items-center justify-center gap-1 ${activePacker === 'maomao' ? 'bg-[#D4A373] text-white shadow-md' : 'text-[#8E8075]'}`}>
+                    <i className="ph-fill ph-backpack"></i> Maomao 行李
+                  </button>
+                  <button onClick={() => setActivePacker('leilei')} className={`flex-1 py-2 text-sm font-bold rounded-full transition-all flex items-center justify-center gap-1 ${activePacker === 'leilei' ? 'bg-[#7A8C5E] text-white shadow-md' : 'text-[#8E8075]'}`}>
+                    <i className="ph-fill ph-tote"></i> 蕾蕾行李
+                  </button>
+                </div>
+
+                <div className={`${packTheme.boxBg} bg-opacity-30 rounded-3xl p-5 border ${packTheme.borderLight} mb-4 transition-colors`}>
+                  <div className="flex gap-3">
+                    <i className={`ph ph-lightbulb text-[20px] ${packTheme.boxIcon} shrink-0`}></i>
+                    <p className={`text-xs ${packTheme.boxText} leading-relaxed font-bold mt-0.5`}>森森魔法策略：只帶 3 天衣物！善用飯店洗衣機，打勾確認不會忘記帶任何東西，隨時可以新增或刪除項目喔！</p>
+                  </div>
+                </div>
+
+                {currentLuggage.map((category) => (
+                  <div key={category.id} className={`bg-white rounded-3xl p-5 shadow-sm border ${packTheme.borderLight} transition-colors mb-4`}>
+                    <h3 className={`font-bold ${packTheme.textTitle} flex items-center gap-2 mb-2`}><span className="text-xl">{category.icon}</span> {category.title}</h3>
+                    <p className={`text-xs ${packTheme.textDesc} mb-3 pb-3 border-b ${packTheme.borderLight}`}>{category.desc}</p>
+                    
+                    <ul className={`text-xs ${packTheme.textItem} space-y-3 mb-4`}>
+                      {category.items.map((item) => (
+                        <li key={item.id} className="flex items-start gap-2 group">
+                          <div onClick={() => toggleLuggage(category.id, item.id)} className="flex items-start gap-2 cursor-pointer flex-1">
+                            {item.checked ? 
+                              <i className={`ph-fill ph-check-square ${packTheme.iconCheck} text-[20px] shrink-0 transition-transform active:scale-90`}></i> : 
+                              <i className={`ph ph-square ${packTheme.iconUncheck} text-[20px] shrink-0 transition-transform active:scale-90`}></i>
+                            }
+                            <span className={`mt-0.5 transition-all ${item.checked ? 'text-gray-400 line-through' : 'font-medium'}`}>
+                              {item.text}
+                            </span>
+                          </div>
+                          <button onClick={() => deleteLuggage(category.id, item.id)} className="text-gray-300 hover:text-red-400 mt-0.5 px-1 transition-colors">
+                            <i className="ph ph-trash"></i>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    
+                    <div className={`flex gap-2 mt-4 pt-3 border-t border-dashed ${packTheme.borderLight}`}>
+                      <input 
+                        type="text" 
+                        value={newLuggageInputs[category.id] || ''}
+                        onChange={(e) => handleLuggageInputChange(category.id, e.target.value)}
+                        placeholder="輸入還要帶的物品..." 
+                        className={`flex-1 ${packTheme.bgLight} bg-opacity-30 rounded-xl px-3 py-2 text-xs ${packTheme.textItem} placeholder-gray-300 focus:border-[${packTheme.borderActive}]`}
+                        onKeyPress={(e) => e.key === 'Enter' && addLuggage(category.id)}
+                      />
+                      <button onClick={() => addLuggage(category.id)} className={`${packTheme.btnBg} text-white px-3 py-2 rounded-xl text-xs font-bold ${packTheme.btnHover} transition-colors`}>
+                        新增
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* --- 美食分頁 --- */}
+            {activeTab === 'food' && (
+              <div className="animate-fade-in space-y-5 pb-6">
+                <div className="flex items-center gap-2 mb-3 text-[#8B6E58]"><i className="ph ph-fork-knife text-[20px]"></i><h2 className="text-xl font-bold">沖繩美食四大天王</h2></div>
+                {foodCategories.map((category, cIdx) => (
+                  <div key={cIdx} className="bg-white rounded-3xl p-5 shadow-sm border border-[#F2E8DC]">
+                    <h3 className="font-bold text-[#D4A373] flex items-center gap-2 mb-3 pb-3 border-b border-[#F2E8DC] text-lg"><span className="text-xl">{category.icon}</span> {category.title}</h3>
+                    <div className="space-y-5">
+                      {category.items.map((food, fIdx) => (
+                        <div key={fIdx} className="flex gap-3 items-start border-b border-[#F9F6F0] pb-3 last:border-0 last:pb-0">
+                          <div className="mt-1"><i className="ph ph-sparkle text-[14px] text-[#A3B18A]"></i></div>
+                          <div className="flex-1">
+                            <h4 className="font-bold text-[#6D5D53] text-sm mb-1">{food.name}</h4>
+                            <p className="text-[11px] text-[#8E8075] leading-relaxed mb-2">{food.desc}</p>
+                            <div className="flex gap-2 flex-wrap items-center">
+                              {food.mapUrl && (
+                                <a href={food.mapUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[10px] bg-[#E9EDC9] text-[#5A6B41] px-2.5 py-1 rounded-full font-bold hover:bg-[#CCD5AE] transition-colors">
+                                  <i className="ph ph-navigation-arrow"></i> 路線指引
+                                </a>
+                              )}
+                              {food.bookingUrl && (
+                                <a href={food.bookingUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[10px] bg-[#FFEDD5] text-[#C2410C] px-2.5 py-1 rounded-full font-bold hover:bg-[#FDBA74] transition-colors">
+                                  <i className="ph ph-link"></i> 前往報名
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* --- 血拚分頁 --- */}
+            {activeTab === 'shopping' && (
+              <div className="animate-fade-in space-y-5 pb-6">
+                <div className="flex items-center gap-2 mb-3 text-[#8B6E58]"><i className="ph ph-shopping-bag text-[20px]"></i><h2 className="text-xl font-bold">終極血拚戰鬥清單</h2></div>
+                
+                {/* 閨蜜切換 Tab */}
+                <div className="flex bg-white rounded-full p-1 border border-[#F2E8DC] shadow-sm mb-2">
+                  <button onClick={() => setActiveShopper('maomao')} className={`flex-1 py-2 text-sm font-bold rounded-full transition-all flex items-center justify-center gap-1 ${activeShopper === 'maomao' ? 'bg-[#D4A373] text-white shadow-md' : 'text-[#8E8075]'}`}>
+                    <i className="ph-fill ph-heart"></i> Maomao 清單
+                  </button>
+                  <button onClick={() => setActiveShopper('leilei')} className={`flex-1 py-2 text-sm font-bold rounded-full transition-all flex items-center justify-center gap-1 ${activeShopper === 'leilei' ? 'bg-[#A3B18A] text-white shadow-md' : 'text-[#8E8075]'}`}>
+                    <i className="ph-fill ph-star"></i> 蕾蕾清單
+                  </button>
+                </div>
+                
+                {/* 互動式願望清單 */}
+                <div className={`bg-white rounded-3xl p-5 shadow-sm border-2 transition-colors ${activeShopper === 'maomao' ? 'border-[#D4A373]' : 'border-[#A3B18A]'}`}>
+                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-[#F2E8DC]">
+                    <h3 className={`font-bold flex items-center gap-2 text-lg transition-colors ${activeShopper === 'maomao' ? 'text-[#D4A373]' : 'text-[#A3B18A]'}`}>
+                      <i className={`ph-fill ${activeShopper === 'maomao' ? 'ph-heart' : 'ph-star'} text-[20px]`}></i> 
+                      {activeShopper === 'maomao' ? 'Maomao 的願望' : '蕾蕾的願望'}
+                    </h3>
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full transition-colors ${activeShopper === 'maomao' ? 'bg-[#FAEDCD] text-[#D4A373]' : 'bg-[#E9EDC9] text-[#5A6B41]'}`}>
+                      已購 {currentWishlist.filter(w => w.checked).length} / {currentWishlist.length}
+                    </span>
+                  </div>
+                  
+                  <ul className="grid grid-cols-1 gap-2.5 mb-4">
+                    {currentWishlist.map((item) => (
+                      <li key={item.id} className={`flex items-start gap-2.5 p-2.5 rounded-xl transition-all group ${item.checked ? 'bg-gray-50' : 'bg-[#FAEDCD] bg-opacity-30 hover:bg-opacity-50'}`}>
+                        <div onClick={() => toggleWish(item.id)} className="flex flex-1 items-start gap-2.5 cursor-pointer">
+                          {item.checked ? 
+                            <i className="ph-fill ph-check-square text-[#A3B18A] text-[20px] shrink-0 mt-0.5"></i> : 
+                            <i className="ph ph-square text-[#D3C4B7] text-[20px] shrink-0 mt-0.5"></i>
+                          }
+                          <div className={`transition-all ${item.checked ? 'opacity-50' : ''}`}>
+                            <span className={`font-bold text-sm block ${item.checked ? 'text-gray-500 line-through' : 'text-[#5C4D43]'}`}>{item.name}</span>
+                            <span className="text-[10px] text-[#8E8075]">{item.desc}</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 mt-1">
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-sm ${item.checked ? 'bg-[#E9EDC9] text-[#5A6B41]' : 'bg-[#F2E8DC] text-[#8E8075]'}`}>
+                            {item.checked ? '已購買' : '未購買'}
+                          </span>
+                          <button onClick={() => deleteWish(item.id)} className="text-gray-300 hover:text-red-400 mt-1 transition-colors">
+                            <i className="ph ph-trash"></i>
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                    {currentWishlist.length === 0 && (
+                      <div className="text-center text-xs text-gray-400 py-4">清單目前空空的喔，趕快新增想買的東西吧！</div>
+                    )}
+                  </ul>
+
+                  <div className="flex gap-2 pt-3 border-t border-dashed border-[#F2E8DC]">
+                    <input 
+                      type="text" 
+                      value={newWish}
+                      onChange={(e) => setNewWish(e.target.value)}
+                      placeholder="輸入想買的新寶物..." 
+                      className="flex-1 bg-[#FAEDCD] bg-opacity-30 rounded-xl px-3 py-2 text-xs text-[#5C4D43] placeholder-[#D3C4B7]"
+                      onKeyPress={(e) => e.key === 'Enter' && addWish()}
+                    />
+                    <button onClick={addWish} className={`text-white px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeShopper === 'maomao' ? 'bg-[#D4A373] hover:bg-[#C28E5B]' : 'bg-[#A3B18A] hover:bg-[#8A9A71]'}`}>
+                      新增
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-[#FFF8E7] rounded-3xl p-5 shadow-sm border border-[#FDE68A]">
+                  <h3 className="font-bold text-[#D97706] mb-3 pb-3 border-b border-[#FDE68A] flex items-center gap-2 text-lg"><i className="ph ph-storefront text-[20px]"></i>唐吉訶德/市區必買</h3>
+                  <div className="grid grid-cols-2 gap-2.5 text-[11px] text-[#78350F] font-medium">
+                    <div>1. 蒟蒻果凍</div><div>2. 呼吸巧克力</div><div>3. 限定黑糖Pocky</div><div>4. 島紅椒蝦餅</div><div>5. 經典梅片/梅干</div><div>6. 味覺糖 Cororo</div><div>7. EVE 止痛藥</div><div>8. 龍角散</div><div>9. DHC 維他命C</div><div>10. 豆乳化妝水</div><div>11. 酵素洗顏粉</div><div>12. 休足時間</div><div>13. 蒸氣眼罩</div><div>14. 沖繩雪鹽</div><div>15. 泡盛小酒版</div><div>16. 沖繩紅薯塔</div><div>17. 沖繩黑糖塊</div><div>18. 兒童入浴球</div><div>19. 防蚊貼片</div><div>20. Calbee+現炸薯片</div>
+                  </div>
+                </div>
+                <div className="bg-[#F0FDF4] rounded-3xl p-5 shadow-sm border border-[#BBF7D0]">
+                  <h3 className="font-bold text-[#166534] mb-3 pb-3 border-b border-[#BBF7D0] flex items-center gap-2 text-lg"><i className="ph ph-shopping-bag text-[20px]"></i>Outlet 必敗</h3>
+                  <div className="grid grid-cols-2 gap-2.5 text-[11px] text-[#14532D] font-medium">
+                    <div>1. ABC-Mart 限定鞋</div><div>2. Gap Kids 童裝</div><div>3. Ralph Lauren</div><div>4. BEAMS</div><div>5. Coach</div><div>6. Le Creuset 鑄鐵鍋</div><div>7. Adidas/Nike</div><div>8. Francfranc</div><div>9. 森林家族玩具</div><div>10. Tommy Hilfiger</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* --- 聯繫與緊急資訊分頁 --- */}
+            {activeTab === 'contact' && (
+              <div className="animate-fade-in space-y-5 pb-6">
+                <div className="flex items-center gap-2 mb-3 text-[#8B6E58]">
+                  <i className="ph ph-address-book text-[20px]"></i>
+                  <h2 className="text-xl font-bold">管家服務與緊急聯繫</h2>
+                </div>
+
+                <div className="bg-white rounded-3xl p-5 shadow-sm border border-[#F2E8DC]">
+                  <h3 className="font-bold text-[#D4A373] flex items-center gap-2 mb-3 pb-3 border-b border-[#F2E8DC] text-lg">
+                    <i className="ph-fill ph-buildings"></i> 住宿地點資訊
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="bg-[#FAEDCD] bg-opacity-30 p-3 rounded-2xl">
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="font-bold text-[#6D5D53] text-sm">📍 星野集團 BEB5 沖繩瀨良垣</h4>
+                        <span className="text-[10px] bg-[#D4A373] text-white px-2 py-0.5 rounded flex-shrink-0">5/5 - 5/8</span>
+                      </div>
+                      <p className="text-[10px] text-[#8E8075] mb-2">Hoshino Resorts BEB5 Okinawa Seragaki<br/>星野リゾート BEB5沖縄瀬良垣</p>
+                      <div className="text-[11px] text-[#5C4D43] space-y-1">
+                        <p className="flex items-start gap-1"><i className="ph ph-map-pin mt-0.5"></i> 沖繩縣國頭郡恩納村瀬良垣1860-4</p>
+                        <p className="flex items-center gap-1"><i className="ph ph-phone"></i> +81 50-3134-8094</p>
+                      </div>
+                      <a href={getMapLink("星野集團 BEB5 沖繩瀨良垣")} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-[10px] bg-white border border-[#D4A373] text-[#D4A373] px-3 py-1.5 rounded-full font-bold hover:bg-[#D4A373] hover:text-white transition-colors">
+                        <i className="ph ph-navigation-arrow"></i> 導航至飯店
+                      </a>
+                    </div>
+                    <div className="bg-[#E9EDC9] bg-opacity-30 p-3 rounded-2xl">
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="font-bold text-[#5A6B41] text-sm">📍 那霸雀巢飯店 (The Nest)</h4>
+                        <span className="text-[10px] bg-[#7A8C5E] text-white px-2 py-0.5 rounded flex-shrink-0">5/8 - 5/10</span>
+                      </div>
+                      <p className="text-[10px] text-[#7A8C5E] mb-2">Nest Hotel Naha Nishi<br/>ネストホテル那覇西</p>
+                      <div className="text-[11px] text-[#4A5D23] space-y-1">
+                        <p className="flex items-start gap-1"><i className="ph ph-map-pin mt-0.5"></i> 沖繩縣那霸市西1-6-1</p>
+                        <p className="flex items-center gap-1"><i className="ph ph-phone"></i> +81 98-868-2228</p>
+                      </div>
+                      <a href={getMapLink("Nest Hotel Naha Nishi")} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-[10px] bg-white border border-[#7A8C5E] text-[#5A6B41] px-3 py-1.5 rounded-full font-bold hover:bg-[#7A8C5E] hover:text-white transition-colors">
+                        <i className="ph ph-navigation-arrow"></i> 導航至飯店
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-3xl p-5 shadow-sm border border-[#F2E8DC]">
+                  <h3 className="font-bold text-[#D4A373] flex items-center gap-2 mb-3 pb-3 border-b border-[#F2E8DC] text-lg">
+                    <i className="ph-fill ph-airplane-tilt"></i> 航班即時動態
+                  </h3>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between bg-blue-50 p-3 rounded-xl border border-blue-100">
+                      <div>
+                        <span className="text-[10px] font-bold text-blue-500 mb-1 block">5/5 (二) 去程航班</span>
+                        <h4 className="font-bold text-blue-900 text-sm">華航 CI122</h4>
+                        <p className="text-xs text-blue-700">TPE 17:05 ➔ OKA 19:45</p>
+                      </div>
+                      <a href="https://www.flightradar24.com/data/flights/ci122" target="_blank" rel="noreferrer" className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow-sm transition-colors">
+                        <i className="ph-bold ph-radar text-lg"></i>
+                      </a>
+                    </div>
+                    <div className="flex items-center justify-between bg-orange-50 p-3 rounded-xl border border-orange-100">
+                      <div>
+                        <span className="text-[10px] font-bold text-orange-500 mb-1 block">5/10 (日) 回程航班</span>
+                        <h4 className="font-bold text-orange-900 text-sm">華航 CI121</h4>
+                        <p className="text-xs text-orange-700">OKA 11:55 ➔ TPE 12:30</p>
+                      </div>
+                      <a href="https://www.flightradar24.com/data/flights/ci121" target="_blank" rel="noreferrer" className="bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-full shadow-sm transition-colors">
+                        <i className="ph-bold ph-radar text-lg"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-[#FFF0F5] rounded-3xl p-5 shadow-sm border border-[#FBCFE8]">
+                  <h3 className="font-bold text-[#BE185D] flex items-center gap-2 mb-3 pb-3 border-b border-[#FBCFE8] text-lg">
+                    <i className="ph-fill ph-warning-circle"></i> 緊急聯絡平安符
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-bold text-[#9D174D] text-sm mb-1">🏛️ 台北駐日經濟文化代表處 那霸分處</h4>
+                      <p className="text-[11px] text-[#831843] leading-relaxed">
+                        急難救助專線：<a href="tel:+819019428936" className="underline font-bold">+81-90-1942-8936</a><br/>
+                        辦公室電話：<a href="tel:+81988627008" className="underline">+81-98-862-7008</a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </main>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
