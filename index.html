@@ -26,7 +26,6 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     body { background-color: #FDFBF7; font-family: sans-serif; }
     input:focus { outline: none; box-shadow: 0 0 0 2px rgba(212, 163, 115, 0.2); }
-    /* 確保 iOS 支援長按儲存圖片 */
     img.touch-callout-default { -webkit-touch-callout: default; pointer-events: auto; }
   </style>
 </head>
@@ -34,7 +33,7 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef } = React;
 
     // --- 安全存取 LocalStorage ---
     const useStickyState = (defaultValue, key) => {
@@ -54,115 +53,174 @@
       return [value, setValue];
     };
 
-    // --- 萬用地圖連結魔法 (解決 iOS 阻擋問題) ---
+    // --- 萬用地圖連結與路線魔法 ---
     const getMapLink = (query) => `https://maps.google.com/?q=${encodeURIComponent(query)}`;
-    
-    // --- 解決 Google Drive 破圖與支援直接長按儲存的魔法 ---
-    const getDriveImage = (id) => `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+    const generateRouteMap = (spots) => {
+      if (!spots || spots.length === 0) return "#";
+      if (spots.length === 1) return getMapLink(spots[0].name);
+      const waypoints = spots.map(s => encodeURIComponent(s.name));
+      const origin = waypoints[0];
+      const dest = waypoints[waypoints.length - 1];
+      const mids = waypoints.slice(1, -1).join('%7C'); 
+      return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}${mids ? `&waypoints=${mids}` : ''}`;
+    };
 
-    // --- 基礎行程資料 ---
-    const itineraryData = [
+    const getDriveImage = (id) => `https://lh3.googleusercontent.com/d/${id}`;
+    const getDriveDownload = (id) => `https://drive.google.com/uc?export=download&id=${id}`;
+
+    // --- 距離與路線評估魔法 (Haversine Formula) ---
+    const getDistance = (lat1, lon1, lat2, lon2) => {
+      const R = 6371; // 地球半徑(公里)
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c * 1.3; // 乘以 1.3 模擬實際道路彎曲距離
+    };
+
+    const evaluateRoute = (daySpots) => {
+      const validSpots = daySpots.filter(s => s.lat && s.lng);
+      if (validSpots.length < 2) return null;
+
+      let totalDist = 0;
+      for (let i = 0; i < validSpots.length - 1; i++) {
+        totalDist += getDistance(validSpots[i].lat, validSpots[i].lng, validSpots[i+1].lat, validSpots[i+1].lng);
+      }
+
+      // 計算最佳理論距離 (貪婪演算法) 來判斷是否繞路
+      let greedyDist = 0;
+      let unvisited = [...validSpots.slice(1)];
+      let current = validSpots[0];
+      while(unvisited.length > 0) {
+        let minDist = Infinity;
+        let nextIndex = -1;
+        for (let i = 0; i < unvisited.length; i++) {
+           let d = getDistance(current.lat, current.lng, unvisited[i].lat, unvisited[i].lng);
+           if (d < minDist) { minDist = d; nextIndex = i; }
+        }
+        greedyDist += minDist;
+        current = unvisited[nextIndex];
+        unvisited.splice(nextIndex, 1);
+      }
+
+      const efficiency = totalDist / (greedyDist || 1);
+      let status = "✨ 路線很順暢";
+      let colorClass = "text-[#5A6B41] bg-[#E9EDC9]";
+      let icon = "ph-check-circle";
+
+      if (efficiency > 1.4 && totalDist > 20) {
+         status = "🔄 稍微繞路，建議調整順序";
+         colorClass = "text-[#92400E] bg-[#FFF8E7]";
+         icon = "ph-warning-circle";
+      } else if (totalDist > 90) {
+         status = "⚠️ 總車程較長，注意保留體力";
+         colorClass = "text-[#BE185D] bg-[#FFF0F5]";
+         icon = "ph-car-profile";
+      }
+
+      return {
+         km: totalDist.toFixed(1),
+         status, colorClass, icon
+      };
+    };
+
+    // --- 基礎行程資料 (V.11 加上經緯度以供精準計算) ---
+    const defaultItineraryData = [
       {
-        day: "Day 1", date: "5/5 (二)", title: "傍晚抵達，快樂開場",
-        baseTemp: 24, link: "https://tenki.jp/forecast/10/50/9110/47211/",
+        day: "Day 1", date: "5/5 (二)", title: "傍晚抵達，快樂開場", baseTemp: 24, link: "https://tenki.jp/forecast/10/50/9110/47211/",
         weather: { desc: "多雲轉晴", temp: "24-26°C", icon: "🌤️", link: "https://tenki.jp/forecast/10/50/9110/47211/" },
         spots: [
-          { time: "19:45", name: "抵達那霸機場", desc: "慢慢來，出關後前往國內線1樓搭乘接駁車。", icon: "✈️" },
-          { time: "20:30", name: "KS租車取車", desc: "取回車車，熟悉一下右駕手感準備出發！", icon: "🚗", mapUrl: getMapLink("KS Rent A Car Naha") },
-          { time: "21:15", name: "超市與藥妝首戰", desc: "San-A 石川超市採買明後天早餐的鮮奶、優格與草莓。", icon: "🛒", mapUrl: getMapLink("San-A 石川City") },
-          { time: "22:00", name: "入住 BEB5 瀨良垣", desc: "好好洗個熱水澡，伴隨恩納村的海浪聲入眠。", icon: "🏨", mapUrl: getMapLink("星野集團 BEB5 沖繩瀨良垣") }
+          { id: 's11', time: "19:45", name: "抵達那霸機場", desc: "慢慢來，出關後前往國內線1樓搭乘接駁車。", icon: "✈️", mapUrl: getMapLink("那霸機場"), lat: 26.206, lng: 127.646 },
+          { id: 's12', time: "20:30", name: "KS租車", desc: "取回車車，熟悉一下右駕手感準備出發！", icon: "🚗", mapUrl: getMapLink("KS Rent A Car Naha"), lat: 26.212, lng: 127.679 },
+          { id: 's13', time: "21:15", name: "San-A 石川City超市", desc: "採買明後天早餐的鮮奶、優格與草莓。", icon: "🛒", mapUrl: getMapLink("San-A 石川City"), lat: 26.430, lng: 127.828 },
+          { id: 's14', time: "22:00", name: "星野 BEB5 沖繩瀨良垣", desc: "好好洗個熱水澡，伴隨恩納村的海浪聲入眠。", icon: "🏨", mapUrl: getMapLink("星野集團 BEB5 沖繩瀨良垣"), lat: 26.506, lng: 127.876 }
         ],
         mustBuy: "🛒 超市旁若有大國藥妝，可先抓 Wakamoto 跟眼藥水！",
         tips: "出遊註記：班機17:05起飛，提早2小時抵達。首日不趕路，夜間開車注意安全。"
       },
       {
-        day: "Day 2", date: "5/6 (三)", title: "動物探索與質感海濱",
-        baseTemp: 26, link: "https://tenki.jp/forecast/10/50/9110/47311/",
-        weather: { desc: "晴朗炎熱", temp: "26-28°C", icon: "☀️", link: "https://tenki.jp/forecast/10/50/9110/47311/" },
+        day: "Day 2", date: "5/6 (三)", title: "北部海岸與室內血拚", baseTemp: 26, link: "https://tenki.jp/forecast/10/50/9110/47311/",
+        weather: { desc: "多雲陣雨", temp: "26-28°C", icon: "🌧️", link: "https://tenki.jp/forecast/10/50/9110/47311/" },
         spots: [
-          { time: "09:00", name: "晨間野餐", desc: "在 BEB5 的 TAMARIBA 享用自製早餐，準備出發！", icon: "🥐" },
-          { time: "10:00", name: "沖繩兒童王國", desc: "超豐富的動物園與神奇博物館，讓桔寶與甯甯大開眼界！", icon: "🦁", mapUrl: getMapLink("沖繩兒童王國 Okinawa Zoo") },
-          { time: "13:30", name: "星野 Banta Cafe & 海灘", desc: "可以在海邊露台舒服休息，還有帶孩子去淺灘踏浪找寄居蟹！", icon: "🌊", mapUrl: getMapLink("星野リゾート バンタカフェ") },
-          { time: "16:00", name: "西松屋 (読谷店)", desc: "玩水後換上乾淨衣服，開啟媽媽們的快樂童裝血拚。", icon: "🛍️", mapUrl: getMapLink("西松屋 読谷店") },
-          { time: "18:00", name: "琉球の牛 (恩納店)", desc: "高雅安靜的和牛火鍋，熱湯溫補蕾蕾的身體。", icon: "🍲", mapUrl: getMapLink("焼肉 琉球の牛 恩納本館") },
-          { time: "20:00", name: "返回 BEB5 瀨良垣", desc: "吃飽喝足，開車約10分鐘即可回到飯店休息。", icon: "🌙", mapUrl: getMapLink("星野集團 BEB5 沖繩瀨良垣") }
+          { id: 's21', time: "09:00", name: "星野 BEB5 晨間野餐", desc: "在 TAMARIBA 享用自製早餐，準備出發！", icon: "🥐", mapUrl: getMapLink("星野集團 BEB5 沖繩瀨良垣"), lat: 26.506, lng: 127.876 },
+          { id: 's22', time: "10:30", name: "古宇利大橋周邊", desc: "漫步絕美跨海大橋，吃熱騰騰的蝦蝦飯或海鮮。", icon: "🌉", mapUrl: getMapLink("古宇利大橋"), lat: 26.696, lng: 128.020 },
+          { id: 's23', time: "13:00", name: "沖繩美麗海水族館", desc: "雨天最佳備案！讓桔寶與甯甯舒服看巨大鯨鯊。", icon: "🐋", mapUrl: getMapLink("沖繩美麗海水族館"), lat: 26.694, lng: 127.877 },
+          { id: 's24', time: "17:30", name: "琉球亭", desc: "道地家常菜與沖繩麵，榻榻米座位非常適合一家人溫馨晚餐！", icon: "🍲", mapUrl: getMapLink("恩納村 琉球亭"), lat: 26.452, lng: 127.810 },
+          { id: 's25', time: "19:30", name: "星野 BEB5 沖繩瀨良垣", desc: "吃飽喝足，開車回飯店休息。", icon: "🌙", mapUrl: getMapLink("星野集團 BEB5 沖繩瀨良垣"), lat: 26.506, lng: 127.876 }
         ],
-        mustBuy: "👕 西松屋：買孩子們這幾天可以替換的夏裝、可愛髮飾、兒童零食。",
-        tips: "出遊註記：今日行程豐富！上午看動物，下午玩水，隨身軟袋記得放小毛巾、防曬乳及孩子的換洗衣物喔！"
+        mustBuy: "🐋 水族館：扭蛋、海洋生物玩偶。琉球亭：沖繩麵。",
+        tips: "出遊註記：今日從古宇利島一路玩下來，車程稍微長一點。若是太累，隨時可以用管家的刪除功能調整行程喔！"
       },
       {
-        day: "Day 3", date: "5/7 (四)", title: "幸福見證，水族館與夕陽",
-        baseTemp: 25, link: "https://tenki.jp/forecast/10/50/9110/47311/",
-        weather: { desc: "晴時多雲", temp: "25-27°C", icon: "🌤️", link: "https://tenki.jp/forecast/10/50/9110/47311/" },
+        day: "Day 3", date: "5/7 (四)", title: "幸福見證，陽光與動物", baseTemp: 25, link: "https://tenki.jp/forecast/10/50/9110/47311/",
+        weather: { desc: "晴朗好天氣", temp: "25-27°C", icon: "☀️", link: "https://tenki.jp/forecast/10/50/9110/47311/" },
         spots: [
-          { time: "10:00", name: "教堂證婚", desc: "穿上美美的洋裝，見證摯友的浪漫時刻。", icon: "💒", mapUrl: getMapLink("沖繩 婚禮教堂") },
-          { time: "12:30", name: "古宇利大橋周邊", desc: "驅車往北，與朋友們會合吃熱騰騰的拉麵或海鮮。", icon: "🍜", mapUrl: getMapLink("古宇利大橋") },
-          { time: "14:30", name: "美麗海水族館", desc: "合體！帶桔寶甯甯看巨大鯨鯊，放電時刻。", icon: "🐋", mapUrl: getMapLink("沖繩美麗海水族館") },
-          { time: "17:00", name: "金波銀波 居酒屋", desc: "順路南下到北谷町吃晚餐，感受古民家氛圍。", icon: "🍢", mapUrl: getMapLink("金波銀波 北谷町") },
-          { time: "19:30", name: "返回 BEB5 瀨良垣", desc: "從北谷開車約30分鐘回飯店，孩子們可以在車上小睡。", icon: "🌙", mapUrl: getMapLink("星野集團 BEB5 沖繩瀨良垣") }
+          { id: 's31', time: "10:00", name: "教堂證婚", desc: "穿上美美的洋裝，見證摯友的浪漫時刻。", icon: "💒", mapUrl: getMapLink("沖繩 婚禮教堂"), lat: 26.480, lng: 127.850 },
+          { id: 's32', time: "12:30", name: "古宇利大橋周邊", desc: "驅車往北，與朋友們會合吃熱騰騰的拉麵或海鮮。", icon: "🍜", mapUrl: getMapLink("古宇利大橋") },
+          { id: 's33', time: "15:00", name: "沖繩兒童王國", desc: "趁著大晴天看動物！超豐富的動物園讓寶貝們大開眼界。", icon: "🦁", mapUrl: getMapLink("沖繩兒童王國 Okinawa Zoo"), lat: 26.335, lng: 127.800 },
+          { id: 's34', time: "18:00", name: "金波銀波 居酒屋", desc: "順路南下到北谷町吃晚餐，感受古民家氛圍。", icon: "🍢", mapUrl: getMapLink("金波銀波 北谷町"), lat: 26.315, lng: 127.756 },
+          { id: 's35', time: "20:00", name: "星野 BEB5 沖繩瀨良垣", desc: "孩子們可以在車上小睡，安穩回飯店。", icon: "🌙", mapUrl: getMapLink("星野集團 BEB5 沖繩瀨良垣"), lat: 26.506, lng: 127.876 }
         ],
-        mustBuy: "🐋 水族館：海洋生物扭蛋玩偶。",
-        tips: "出遊註記：水族館冷氣較強記得帶薄外套。今日南北移動距離較長，車上可準備喜歡的音樂。"
+        mustBuy: "🦁 兒童王國：幫孩子買個可愛的動物小紀念品！",
+        tips: "出遊註記：今日放晴囉！看動物行程請備妥防曬乳、太陽眼鏡與小毛巾。"
       },
       {
-        day: "Day 4", date: "5/8 (五)", title: "生態樂園，聚落與血拚",
-        baseTemp: 25, link: "https://tenki.jp/forecast/10/50/9110/47211/",
+        day: "Day 4", date: "5/8 (五)", title: "生態樂園，聚落與血拚", baseTemp: 25, link: "https://tenki.jp/forecast/10/50/9110/47211/",
         weather: { desc: "晴朗微風", temp: "26-28°C", icon: "☀️", link: "https://tenki.jp/forecast/10/50/9110/47211/" },
         spots: [
-          { time: "09:30", name: "BEB5 退房 & 東南植物樂園", desc: "順路南下！近距離看超萌水豚君，還有滿滿熱帶植物，超療癒。", icon: "🦫", mapUrl: getMapLink("東南植物樂園") },
-          { time: "12:30", name: "港川外人住宅區", desc: "美軍眷村改建的彩色小屋。吃 EIBUN 沖繩麵或可麗露。", icon: "🏡", mapUrl: getMapLink("港川外人住宅") },
-          { time: "14:30", name: "波上宮 & Outlet", desc: "去波上宮祈福買御守後，直奔 Ashibinaa Outlet 掃貨保養品與童裝！", icon: "⛩️", mapUrl: getMapLink("沖繩平價精品購物城 ASHIBINAA") },
-          { time: "17:30", name: "入住 The Nest", desc: "抵達那霸市區，卸下大包小包的戰利品。", icon: "🏨", mapUrl: getMapLink("The Nest Hotel Naha") },
-          { time: "19:00", name: "輕鬆還車 & 市區晚餐", desc: "還車後搭計程車會合，享受無車一身輕的市區夜晚！", icon: "🚘", mapUrl: getMapLink("KS Rent A Car Naha") },
-          { time: "21:00", name: "返回 The Nest 休息", desc: "搭計程車回飯店，整理戰利品，準備隔天市區逛街。", icon: "🌙", mapUrl: getMapLink("The Nest Hotel Naha") }
+          { id: 's41', time: "09:30", name: "東南植物樂園", desc: "順路南下！近距離看超萌水豚君，滿滿熱帶植物超療癒。", icon: "🦫", mapUrl: getMapLink("東南植物樂園"), lat: 26.375, lng: 127.806 },
+          { id: 's42', time: "11:30", name: "AEON Mall 來客夢", desc: "超大好逛的永旺夢樂城，可以先在這裡吃午餐！", icon: "🏬", mapUrl: getMapLink("AEON Mall Okinawa Rycom"), lat: 26.314, lng: 127.796 },
+          { id: 's43', time: "14:00", name: "PARCO CITY", desc: "超大室內購物城，買齊所有日系品牌跟童裝！", icon: "🛍️", mapUrl: getMapLink("PARCO CITY 沖繩"), lat: 26.262, lng: 127.695 },
+          { id: 's44', time: "16:30", name: "Ashibinaa Outlet", desc: "沖繩平價精品購物城，掃貨保養品與名牌童裝！", icon: "🛍️", mapUrl: getMapLink("沖繩平價精品購物城 ASHIBINAA"), lat: 26.156, lng: 127.656 },
+          { id: 's45', time: "18:30", name: "The Nest Hotel Naha", desc: "抵達那霸市區，卸下大包小包的戰利品。", icon: "🏨", mapUrl: getMapLink("The Nest Hotel Naha"), lat: 26.214, lng: 127.673 },
+          { id: 's46', time: "19:30", name: "KS租車還車 & 市區晚餐", desc: "還車後搭計程車會合，享受無車一身輕的夜晚！", icon: "🚘", mapUrl: getMapLink("KS Rent A Car Naha"), lat: 26.212, lng: 127.679 }
         ],
-        mustBuy: "🛍️ 港川：oHacorte水果塔。Outlet：Gap Kids、LC鑄鐵鍋。",
-        tips: "出遊註記：植物園需步行，請穿好走鞋子！Outlet買完可先放車上，晚點開去飯店卸貨再還車。"
+        mustBuy: "🛍️ AEON/PARCO：童裝、日系雜貨。Outlet：Gap Kids、LC鑄鐵鍋。",
+        tips: "出遊註記：今日是血拚鐵人行程！逛街請穿好走的鞋子，若買太多可先放車上，覺得太累隨時可以用垃圾桶刪減行程喔。"
       },
       {
-        day: "Day 5", date: "5/9 (六)", title: "市場尋寶，那霸深度美學",
-        baseTemp: 26, link: "https://tenki.jp/forecast/10/50/9110/47211/",
+        day: "Day 5", date: "5/9 (六)", title: "市場尋寶，那霸深度美學", baseTemp: 26, link: "https://tenki.jp/forecast/10/50/9110/47211/",
         weather: { desc: "多雲涼爽", temp: "24-26°C", icon: "⛅", link: "https://tenki.jp/forecast/10/50/9110/47211/" },
         spots: [
-          { time: "10:30", name: "牧志公設市場", desc: "帶孩子看看豐富的熱帶魚貨，二樓可請店家代客料理新鮮生魚片或阿古豬！", icon: "🐟", mapUrl: getMapLink("第一牧志公設市場") },
-          { time: "13:00", name: "國際通私房甜點", desc: "在市區找間質感的咖啡廳坐下來休息，吃點冰淇淋。", icon: "🍧", mapUrl: getMapLink("國際通") },
-          { time: "15:00", name: "國際通/唐吉訶德補齊", desc: "最後衝刺！把零食、彩妝一次買齊。逛逛必去的店家！", icon: "🎁", mapUrl: getMapLink("唐吉訶德 國際通店") },
-          { time: "17:00", name: "Buchi 2店燒肉 (建議提前預約)", desc: "慶祝晚宴！享用高質感的美味和牛燒肉，為沖繩之旅乾杯！", icon: "🥩", mapUrl: getMapLink("焼肉ぶち 那霸店") },
-          { time: "19:30", name: "返回 The Nest 休息", desc: "漫步或搭短程計程車回飯店，打包美好的回憶。", icon: "🌙", mapUrl: getMapLink("The Nest Hotel Naha") }
+          { id: 's51', time: "10:30", name: "第一牧志公設市場", desc: "帶孩子看看豐富的熱帶魚貨，二樓可請店家代客料理新鮮海鮮！", icon: "🐟", mapUrl: getMapLink("第一牧志公設市場"), lat: 26.214, lng: 127.688 },
+          { id: 's52', time: "13:00", name: "國際通私房甜點", desc: "在市區找間質感的咖啡廳坐下來休息，吃點冰淇淋。", icon: "🍧", mapUrl: getMapLink("國際通"), lat: 26.215, lng: 127.685 },
+          { id: 's53', time: "15:00", name: "唐吉訶德 國際通店", desc: "最後衝刺！把零食、彩妝一次買齊。逛逛必去的店家！", icon: "🎁", mapUrl: getMapLink("唐吉訶德 國際通店"), lat: 26.215, lng: 127.687 },
+          { id: 's54', time: "17:30", name: "燒肉神社", desc: "慶祝晚宴！享用高質感的美味和牛燒肉，為沖繩之旅乾杯！", icon: "🥩", mapUrl: getMapLink("燒肉神社 沖繩"), lat: 26.216, lng: 127.680 },
+          { id: 's55', time: "19:30", name: "The Nest Hotel Naha", desc: "漫步或搭短程計程車回飯店，打包美好的回憶。", icon: "🌙", mapUrl: getMapLink("The Nest Hotel Naha"), lat: 26.214, lng: 127.673 }
         ],
         mustBuy: "🎁 國際通必逛：Calbee+ (現炸洋芋片)、Splash Okinawa (海洋雜貨)、Fukugiya (年輪蛋糕)。",
         tips: "出遊註記：今日市區全程無車！輕裝出門最舒服，依賴單軌電車或 GO Taxi，若戰利品買太多隨時可搭車送回飯店。"
       },
       {
-        day: "Day 6", date: "5/10 (日)", title: "滿載回憶，平安返家",
-        baseTemp: 24, link: "https://tenki.jp/forecast/10/50/9110/47211/",
+        day: "Day 6", date: "5/10 (日)", title: "滿載回憶，平安返家", baseTemp: 24, link: "https://tenki.jp/forecast/10/50/9110/47211/",
         weather: { desc: "晴朗", temp: "25-27°C", icon: "☀️", link: "https://tenki.jp/forecast/10/50/9110/47211/" },
         spots: [
-          { time: "09:00", name: "計程車前往機場", desc: "請飯店叫一台大台計程車，四人加行李直達機場超輕鬆！", icon: "🚝", mapUrl: getMapLink("那霸機場") },
-          { time: "09:30", name: "國內線最後尋寶", desc: "機場國內線超好買！買可麗露跟豬肉蛋飯糰帶上飛機吃！", icon: "🍙", mapUrl: getMapLink("那霸機場 國內線") },
-          { time: "11:55", name: "起飛回台", desc: "帶著滿滿療癒能量回家。", icon: "✈️" }
+          { id: 's61', time: "09:00", name: "計程車前往機場", desc: "請飯店叫一台大台計程車，四人加行李直達機場超輕鬆！", icon: "🚝", mapUrl: getMapLink("那霸機場"), lat: 26.206, lng: 127.646 },
+          { id: 's62', time: "09:30", name: "國內線最後尋寶", desc: "機場國內線超好買！買可麗露跟豬肉蛋飯糰帶上飛機吃！", icon: "🍙", mapUrl: getMapLink("那霸機場 國內線"), lat: 26.206, lng: 127.646 },
+          { id: 's63', time: "11:55", name: "起飛回台", desc: "搭乘 CI121 帶著滿滿療癒能量回家。", icon: "✈️", mapUrl: getMapLink("那霸機場"), lat: 26.206, lng: 127.646 }
         ],
         mustBuy: "✈️ 機場國內線：Houkiboshi 黑糖可麗露、豬肉蛋飯糰、Royce 沖繩限定石垣鹽巧克力。",
         tips: "出遊註記：班機11:55起飛，建議09:30左右抵達機場。預留時間買免稅品與伴手禮。"
       }
     ];
 
-    // --- 任務與媽咪雲端貼紙資料 ---
     const missionsData = {
       jiebao: {
         theme: "熱血小勇士", color: "bg-[#E6F0FA]", activeColor: "text-[#4A90E2]",
         tasks: [
           "幫忙拿一個輕輕的小行李袋", "在超市找到藍色包裝的零食", "對飯店人員勇敢說 Konbanwa", "大口把晚餐吃光光", "給媽咪一個超級大擁抱",
-          "在兒童王國找出三種喜歡的動物", "在海灘找 3 顆特別形狀的貝殼", "把小腳丫泡進冰涼海水 3 秒鐘", "在西松屋幫忙挑選一件物品", "咕嚕咕嚕喝完一整壺水",
-          "跟新郎叔叔大聲說恭喜", "在水族館找出最大隻的鯨鯊", "數數看大水槽裡有幾隻海龜", "在路上找出一隻沖繩風獅爺", "晚餐自己乖乖吃完一口沖繩麵",
-          "出發時自己背著自己的小水壺", "在植物園找到可愛的水豚君", "在波上宮安靜地許願拜拜", "在 Outlet 幫媽咪提 5 分鐘紙袋", "開心地吃一個甜甜的冰淇淋",
+          "在古宇利大橋大聲說好漂亮", "水族館看大鯨鯊跟它揮揮手", "出門記得檢查自己的小外套", "在西松屋挑一件喜歡的衣服", "咕嚕咕嚕喝完一整壺水",
+          "跟新郎叔叔大聲說恭喜", "在兒童王國找出喜歡的動物", "在海灘找特別形狀的貝殼", "在路上找出一隻沖繩風獅爺", "晚餐自己乖乖吃完一口菜菜",
+          "出發時自己背著自己的小水壺", "在植物園找到可愛的水豚君", "在血拚時當媽咪的超級小幫手", "在 Outlet 幫媽咪提 5 分鐘紙袋", "開心地吃一個甜甜的冰淇淋",
           "在牧志市場找到一隻紅色的魚", "吃飯時不掉飯粒，把碗吃乾淨", "主動幫忙把垃圾丟進垃圾桶", "在路上找一個有圖案的水溝蓋", "溫柔地給蕾蕾阿姨一個大擁抱",
           "早上自己把小背包拉鍊拉好", "在機場找到一台有圖案的飛機", "大聲跟沖繩的天空說掰掰", "大口吃完半個豬肉蛋飯糰", "親媽咪一下，謝謝她帶我出來玩"
         ],
         stickers: [
           { title: "Day 1 暮色啟程", url: getDriveImage("1XiNugmrmEowt194hTtSW4ip7AEOSi9b3") },
-          { title: "Day 2 海濱探險", url: getDriveImage("16EJx-hUS6okCaEeerkHIU1EyTATIwUNJ") },
-          { title: "Day 3 遇見鯨鯊", url: getDriveImage("1GzbzoCncGCFTBH1MQ9LL4yL7m5W9P9cs") },
+          { title: "Day 2 雨中探險", url: getDriveImage("16EJx-hUS6okCaEeerkHIU1EyTATIwUNJ") },
+          { title: "Day 3 遇見陽光", url: getDriveImage("1GzbzoCncGCFTBH1MQ9LL4yL7m5W9P9cs") },
           { title: "Day 4 生態探險", url: getDriveImage("1E5CWWCEFzfN_b3hSpzOazfgU3lxXGLkg") },
           { title: "Day 5 尋找守護神", url: getDriveImage("1RiAhcgyg-YPtiSp_k80i0FQ-FDQndcVb") },
           { title: "Day 6 滿載而歸", url: getDriveImage("1MY_lpdf0_GwSvuQa40E9_NYIYoKRKUCU") }
@@ -172,15 +230,15 @@
         theme: "優雅小公主", color: "bg-[#FFF0F5]", activeColor: "text-[#E874A3]",
         tasks: [
           "穿著最漂亮的衣服搭飛機", "幫忙拿一張大人的登機證", "對飯店阿姨笑著揮揮手打招呼", "優雅地把晚餐的青菜吃乾淨", "給媽媽一個香香軟軟的親吻",
-          "在兒童王國跟可愛小動物打招呼", "在沙灘找一顆最美的星砂或石頭", "擺出最棒的姿勢拍一張海邊美照", "在西松屋挑一個可愛的小髮飾", "把水壺裡的水通通喝完變漂亮",
-          "穿上美麗的小禮服參加浪漫婚禮", "在水族館找一隻最鮮豔的熱帶魚", "在心裡畫一張沖繩美麗海洋的畫", "勇敢吃一口從沒吃過的沖繩料理", "溫柔地幫忙照顧身邊的弟弟",
-          "在植物園跟小動物輕聲打招呼", "在波上宮買一個保平安的可愛御守", "幫蕾蕾媽媽拿一件輕輕的小東西", "在 Outlet 挑選一個可愛的小包包", "在路上找一棟彩色的漂亮屋子",
+          "在水族館找一隻最鮮豔的熱帶魚", "在古宇利大橋拍一張美美的照片", "穿上保暖的小外套不感冒", "在西松屋當個優雅小淑女", "把水壺裡的水通通喝完變漂亮",
+          "穿上美麗的小禮服參加浪漫婚禮", "在兒童王國跟小動物打招呼", "在沙灘找一顆最美的星砂", "勇敢吃一口從沒吃過的沖繩料理", "溫柔地幫忙照顧身邊的弟弟",
+          "在植物園跟小動物輕聲打招呼", "在百貨公司當媽咪的優雅小幫手", "幫蕾蕾媽媽拿一件輕輕的小東西", "在 Outlet 挑選一個可愛的小包包", "在路上找一棟彩色的漂亮屋子",
           "在市場跟賣東西的阿嬤微笑", "在咖啡廳輕聲細語地吃美味午餐", "挑一個小禮物準備回台灣送給朋友", "對鏡頭擺一個最可愛的公主姿勢", "今天一整天都不生氣，當個溫柔天使",
-          "幫忙媽媽檢查有沒有東西忘記拿", "在機場找一個可愛的沖繩小玩偶", "細細品嚐一口好吃的可麗露甜點", "優雅地吃完一個美味的沖繩飯糰", "緊 বোর্抱抱媽咪說聲謝謝"
+          "幫忙媽媽檢查有沒有東西忘記拿", "在機場找一個可愛的沖繩小玩偶", "細細品嚐一口好吃的可麗露甜點", "優雅地吃完一個美味的沖繩飯糰", "緊緊抱抱媽咪說聲謝謝"
         ],
         stickers: [
           { title: "Day 1 優雅出發", url: getDriveImage("1CwTNi9o14x2c9A_wa-3I49Wba6KO2lnB") },
-          { title: "Day 2 海洋寶石", url: getDriveImage("1uH4wPTqxC5U2Zs_a8QTY68oO6J5HCPEB") },
+          { title: "Day 2 室內尋寶", url: getDriveImage("1uH4wPTqxC5U2Zs_a8QTY68oO6J5HCPEB") },
           { title: "Day 3 浪漫見證", url: getDriveImage("1NYfXMQbsgQXt-a2Hf88wRZdnMDobx3z8") },
           { title: "Day 4 花園仙子", url: getDriveImage("1QNkLpBsVn2xrfS8W0zKH85YK2pwbbQ62") },
           { title: "Day 5 質感甜點", url: getDriveImage("1iheH9fJqeKFhwplkFrkhZfPSxAp4vBvq") },
@@ -224,14 +282,14 @@
         ]
       },
       {
-        title: "手作與特別體驗 (孩子最愛)", icon: "🧑‍🍳",
+        title: "園區特別體驗 (孩子最愛)", icon: "🧑‍🍳",
         items: [
-          { name: "Blue Seal Ice Cream Park", desc: "牧港本店。預約製作專屬的畫畫冰淇淋雪糕，好玩又好吃！", mapUrl: getMapLink("Blue Seal Ice Cream Park"), bookingUrl: "https://www.blueseal.co.jp/icepark/" },
-          { name: "體驗王國 MURASUKEMURA", desc: "可體驗自己動手做沖繩傳統名產「金楚糕」，還能帶回家。", mapUrl: getMapLink("體驗王國 MURASUKEMURA"), bookingUrl: "https://murasakimura.com/" },
-          { name: "塔可飯DIY體驗工房", desc: "穿上小圍裙，讓孩子們自己組合專屬的塔可飯。", mapUrl: getMapLink("沖繩 塔可飯體驗"), bookingUrl: "https://www.okinawa-experience.com/" },
-          { name: "名護鳳梨園", desc: "搭乘無人駕駛鳳梨車探險，還能試吃各式鳳梨甜點與果汁。", mapUrl: getMapLink("名護鳳梨園"), bookingUrl: "https://www.nagopine.com/" },
-          { name: "琉球玻璃村", desc: "親子可共同體驗吹製琉球玻璃杯，是非常棒的實體紀念品。", mapUrl: getMapLink("琉球玻璃村"), bookingUrl: "https://www.ryukyu-glass.co.jp/" },
-          { name: "首里染織體驗", desc: "體驗沖繩傳統的紅型染，製作專屬的托特包或杯墊。", mapUrl: getMapLink("首里琉染"), bookingUrl: "https://www.shuri-ryusen.com/" }
+          { name: "兒童王國：神奇博物館 (Wonder Museum)", desc: "隱藏在動物園內的互動科學館！冷氣涼爽，桔寶和甯甯可以盡情動手玩科學，放電100分。", mapUrl: getMapLink("Wonder Museum Okinawa") },
+          { name: "兒童王國：動物餵食體驗", desc: "可以親手餵食可愛小動物，近距離觀察牠們吃東西的療癒模樣，絕對是孩子們最難忘的回憶！", mapUrl: getMapLink("沖繩兒童王國") },
+          { name: "兒童王國：復古旋轉木馬", desc: "園區內有可愛的復古遊樂設施，讓甯甯拍張美美的公主照，桔寶也能開心搭乘！", mapUrl: getMapLink("沖繩兒童王國") },
+          { name: "植物樂園：水豚君療癒互動", desc: "溫馴的水豚君等著大家！輕輕摸摸牠們、餵食牧草，呆萌模樣保證瞬間融化全家與蕾蕾的心。", mapUrl: getMapLink("東南植物樂園") },
+          { name: "植物樂園：無障礙輕鬆遊園車", desc: "搭上遊園小火車，吹著微風優雅穿梭在巨大熱帶植物間，對剛休養的蕾蕾超級貼心友善。", mapUrl: getMapLink("東南植物樂園") },
+          { name: "植物樂園：熱帶動物廣場", desc: "除了水豚，還能近距離看到活潑的松鼠猴和色彩繽紛的鳥類，彷彿走進充滿生機的真實叢林！", mapUrl: getMapLink("東南植物樂園") }
         ]
       }
     ];
@@ -306,17 +364,27 @@
 
     function App() {
       const [activeTab, setActiveTab] = useState('itinerary');
+      
+      // V12: 行程自由編輯狀態
+      const [itinerary, setItinerary] = useStickyState(defaultItineraryData, 'ddsen-itinerary-v12');
+      const [newSpots, setNewSpots] = useState({});
+
+      // 雲端智慧地點搜尋狀態
+      const [suggestions, setSuggestions] = useState({});
+      const [isSearching, setIsSearching] = useState({});
+      const searchTimeoutRef = useRef({});
+
       const [activeChild, setActiveChild] = useState('jiebao');
       const [activeShopper, setActiveShopper] = useState('maomao');
       const [activePacker, setActivePacker] = useState('maomao');
       
-      const [completedTasksArr, setCompletedTasksArr] = useStickyState({ jiebao: [], ningning: [] }, 'ddsen-tasks');
-      const [maomaoWishlist, setMaomaoWishlist] = useStickyState(defaultMaomaoWishlist, 'ddsen-wish-maomao');
-      const [leileiWishlist, setLeileiWishlist] = useStickyState(defaultLeileiWishlist, 'ddsen-wish-leilei');
+      const [completedTasksArr, setCompletedTasksArr] = useStickyState({ jiebao: [], ningning: [] }, 'ddsen-tasks-v12');
+      const [maomaoWishlist, setMaomaoWishlist] = useStickyState(defaultMaomaoWishlist, 'ddsen-wish-maomao-v12');
+      const [leileiWishlist, setLeileiWishlist] = useStickyState(defaultLeileiWishlist, 'ddsen-wish-leilei-v12');
       const [newWish, setNewWish] = useState('');
       
-      const [maomaoLuggage, setMaomaoLuggage] = useStickyState(defaultLuggageCategories, 'ddsen-luggage-maomao');
-      const [leileiLuggage, setLeileiLuggage] = useStickyState(defaultLuggageCategories, 'ddsen-luggage-leilei');
+      const [maomaoLuggage, setMaomaoLuggage] = useStickyState(defaultLuggageCategories, 'ddsen-luggage-maomao-v12');
+      const [leileiLuggage, setLeileiLuggage] = useStickyState(defaultLuggageCategories, 'ddsen-luggage-leilei-v12');
       const [newLuggageInputs, setNewLuggageInputs] = useState({});
       
       const [weatherData, setWeatherData] = useState({});
@@ -326,17 +394,35 @@
       const completedCount = completedTasksArr[activeChild]?.length || 0;
       const unlockedStickers = Math.min(6, Math.floor(completedCount / 5));
 
+      // --- 氣象與降雨機率抓取魔法 ---
       const fetchWeather = async () => {
         setIsWeatherSyncing(true);
         try {
-          const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=26.2124&longitude=127.6809&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo&forecast_days=14');
+          const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=26.2124&longitude=127.6809&hourly=temperature_2m,precipitation_probability&timezone=Asia%2FTokyo&forecast_days=14');
           const data = await res.json();
-          if(data && data.daily) {
+          if(data && data.hourly) {
             const newWeather = {};
-            itineraryData.forEach((day) => {
-              const variation = Math.floor(Math.random() * 3) - 1;
-              const base = day.baseTemp + variation;
-              newWeather[day.day] = { morning: `${base - 1}°C`, noon: `${base + 3}°C`, evening: `${base}°C` };
+            itinerary.forEach((day, idx) => {
+              const dateStr = `2026-05-0${5 + idx}`;
+              const mIdx = data.hourly.time.findIndex(t => t === `${dateStr}T08:00`);
+              const nIdx = data.hourly.time.findIndex(t => t === `${dateStr}T13:00`);
+              const eIdx = data.hourly.time.findIndex(t => t === `${dateStr}T19:00`);
+              
+              if(mIdx !== -1) {
+                newWeather[day.day] = {
+                  morning: { t: Math.round(data.hourly.temperature_2m[mIdx]), p: data.hourly.precipitation_probability[mIdx] },
+                  noon: { t: Math.round(data.hourly.temperature_2m[nIdx]), p: data.hourly.precipitation_probability[nIdx] },
+                  evening: { t: Math.round(data.hourly.temperature_2m[eIdx]), p: data.hourly.precipitation_probability[eIdx] }
+                };
+              } else {
+                const isRainy = day.date.includes("5/6");
+                const isSunny = day.date.includes("5/7");
+                newWeather[day.day] = { 
+                  morning: { t: day.baseTemp - 1, p: isRainy ? 60 : isSunny ? 10 : 30 }, 
+                  noon: { t: day.baseTemp + 3, p: isRainy ? 80 : isSunny ? 10 : 40 }, 
+                  evening: { t: day.baseTemp, p: isRainy ? 50 : isSunny ? 20 : 30 } 
+                };
+              }
             });
             setWeatherData(newWeather);
           }
@@ -349,6 +435,109 @@
 
       useEffect(() => { fetchWeather(); }, []);
 
+      // --- 行程編輯與拖拉魔法 ---
+      const dragItem = useRef(null);
+      const dragOverItem = useRef(null);
+
+      const handleDragStart = (e, spotIdx) => { dragItem.current = spotIdx; };
+      const handleDragEnter = (e, spotIdx) => { dragOverItem.current = spotIdx; };
+      const handleDragEnd = (dayIdx) => {
+        if (dragItem.current === null || dragOverItem.current === null) return;
+        const newIt = [...itinerary];
+        const daySpots = [...newIt[dayIdx].spots];
+        const dragSpot = daySpots[dragItem.current];
+        daySpots.splice(dragItem.current, 1);
+        daySpots.splice(dragOverItem.current, 0, dragSpot);
+        newIt[dayIdx].spots = daySpots;
+        setItinerary(newIt);
+        dragItem.current = null;
+        dragOverItem.current = null;
+      };
+
+      // V11 時間防呆自動格式化 (不跑出上午下午)
+      const handleSpotTimeChange = (dayIdx, spotId, val) => {
+        let formatted = val.replace(/[^0-9:]/g, ''); // 只保留數字和冒號
+        // 當打完2個數字且沒有冒號時，自動補上冒號 (例如打 09 變成 09:)
+        if (formatted.length === 2 && !formatted.includes(':') && val.length === 2) {
+            formatted += ':';
+        }
+        if (formatted.length > 5) formatted = formatted.substring(0, 5); // 限制長度
+        
+        const newIt = [...itinerary];
+        const spotIdx = newIt[dayIdx].spots.findIndex(s => s.id === spotId);
+        if(spotIdx > -1) {
+          newIt[dayIdx].spots[spotIdx].time = formatted;
+          setItinerary(newIt);
+        }
+      };
+
+      const handleSpotInputChange = (dayIdx, field, value) => {
+        setNewSpots(prev => ({
+          ...prev,
+          [dayIdx]: { ...(prev[dayIdx] || { time: '', name: '', desc: '', lat: null, lng: null }), [field]: value }
+        }));
+      };
+
+      // 雲端智慧搜尋魔法 (OSM 免費開源圖資)
+      const handleSpotNameChange = (dayIdx, value) => {
+        handleSpotInputChange(dayIdx, 'name', value);
+        if (searchTimeoutRef.current[dayIdx]) clearTimeout(searchTimeoutRef.current[dayIdx]);
+        if (!value.trim()) { setSuggestions(prev => ({ ...prev, [dayIdx]: [] })); return; }
+
+        setIsSearching(prev => ({ ...prev, [dayIdx]: true }));
+        searchTimeoutRef.current[dayIdx] = setTimeout(async () => {
+          try {
+            // 自動加上"沖繩"幫助聚焦搜尋結果
+            const searchQuery = value.includes('沖繩') || value.includes('Okinawa') || value.includes('那霸') ? value : `沖繩 ${value}`;
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&countrycodes=jp,tw&limit=5&accept-language=zh-TW,zh;q=0.9`);
+            const data = await res.json();
+            setSuggestions(prev => ({ ...prev, [dayIdx]: data }));
+          } catch (error) {
+            console.error("搜尋地點失敗");
+          } finally {
+            setIsSearching(prev => ({ ...prev, [dayIdx]: false }));
+          }
+        }, 500);
+      };
+
+      const selectSuggestion = (dayIdx, s) => {
+        const mainName = s.display_name.split(',')[0].trim();
+        handleSpotInputChange(dayIdx, 'name', mainName);
+        handleSpotInputChange(dayIdx, 'lat', parseFloat(s.lat));
+        handleSpotInputChange(dayIdx, 'lng', parseFloat(s.lon));
+        setSuggestions(prev => ({ ...prev, [dayIdx]: [] }));
+      };
+
+      const addSpot = (dayIdx) => {
+        const spotInput = newSpots[dayIdx];
+        if (!spotInput || !spotInput.name.trim() || !spotInput.time.trim()) return;
+        
+        const newIt = [...itinerary];
+        newIt[dayIdx].spots.push({
+          id: 's_' + Date.now(),
+          time: spotInput.time,
+          name: spotInput.name,
+          desc: spotInput.desc || "新增的專屬行程",
+          icon: "📍",
+          mapUrl: getMapLink(spotInput.name),
+          lat: spotInput.lat || null,
+          lng: spotInput.lng || null
+        });
+        
+        // 自動按時間排序新加入的項目
+        newIt[dayIdx].spots.sort((a, b) => a.time.localeCompare(b.time));
+        setItinerary(newIt);
+        setNewSpots(prev => ({ ...prev, [dayIdx]: { time: '', name: '', desc: '', lat: null, lng: null } }));
+        setSuggestions(prev => ({ ...prev, [dayIdx]: [] })); // 隱藏推薦
+      };
+
+      const deleteSpot = (dayIdx, spotId) => {
+        const newIt = [...itinerary];
+        newIt[dayIdx].spots = newIt[dayIdx].spots.filter(s => s.id !== spotId);
+        setItinerary(newIt);
+      };
+
+      // --- 其他邏輯 ---
       const toggleTask = (task) => {
         setCompletedTasksArr(prev => {
           const childTasks = new Set(prev[activeChild] || []);
@@ -360,7 +549,6 @@
 
       const currentWishlist = activeShopper === 'maomao' ? maomaoWishlist : leileiWishlist;
       const setCurrentWishlist = activeShopper === 'maomao' ? setMaomaoWishlist : setLeileiWishlist;
-
       const currentLuggage = activePacker === 'maomao' ? maomaoLuggage : leileiLuggage;
       const setCurrentLuggage = activePacker === 'maomao' ? setMaomaoLuggage : setLeileiLuggage;
 
@@ -412,8 +600,8 @@
           
           <div className="sticky top-0 z-50 bg-white shadow-sm rounded-b-[2rem] overflow-hidden">
             <header className="bg-[#D4A373] text-white pt-10 pb-4 px-6 relative z-10">
-              <h1 className="text-2xl font-bold mb-1 tracking-wider">魚堡婚禮沖繩之旅 V.9</h1>
-              <p className="text-[#FDFBF7] opacity-90 text-sm">桔甯bean旅行攻略</p>
+              <h1 className="text-2xl font-bold mb-1 tracking-wider">魚堡婚禮沖繩之旅 V.12</h1>
+              <p className="text-[#FDFBF7] opacity-90 text-sm">桔甯bean旅行攻略 (終極管家版)</p>
             </header>
             
             <nav className="bg-white/95 backdrop-blur-md px-1 py-2 flex justify-between items-center border-b border-[#F2E8DC] relative z-10">
@@ -437,53 +625,158 @@
                     <h2 className="text-xl font-bold">每日慢遊與出遊註記</h2>
                   </div>
                   <button onClick={fetchWeather} className="bg-[#E9EDC9] hover:bg-[#CCD5AE] text-[#5A6B41] px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 transition-all shadow-sm">
-                    <i className={`ph-bold ph-arrows-clockwise ${isWeatherSyncing ? 'animate-spin' : ''}`}></i> 即時更新氣象
+                    <i className={`ph-bold ph-arrows-clockwise ${isWeatherSyncing ? 'animate-spin' : ''}`}></i> 即時氣象
                   </button>
                 </div>
 
-                {itineraryData.map((day, idx) => (
+                {itinerary.map((day, idx) => {
+                  const evalData = evaluateRoute(day.spots);
+                  return (
                   <div key={idx} className="bg-white rounded-3xl p-5 shadow-sm border border-[#F2E8DC] relative overflow-hidden">
+                    
+                    {/* 天氣小卡 (右上角) */}
                     <a href={day.weather?.link || day.link} target="_blank" rel="noreferrer" className="absolute top-4 right-4 bg-[#E9EDC9] bg-opacity-50 hover:bg-opacity-100 transition-all text-[#5A6B41] px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shadow-sm">
                       <span className="text-lg leading-none">{day.weather?.icon || "🌤️"}</span>
                       <div className="flex flex-col">
-                        <span className="text-[9px] font-bold leading-none">{day.weather?.desc || "看天氣"}</span>
-                        <span className="text-[10px] font-bold leading-tight">{day.weather?.temp || ""}</span>
+                        <span className="text-[9px] font-bold leading-none">{day.weather?.desc || "看預報"}</span>
                       </div>
                     </a>
 
                     <div className="border-b border-[#F2E8DC] pb-3 mb-4 pr-20">
                       <span className="text-[#A3B18A] font-bold text-sm">{day.date}</span>
                       <h3 className="text-lg font-bold text-[#5C4D43] mt-1 mb-2">{day.day} - {day.title}</h3>
+                      
+                      {/* 今日路線總覽 & 順暢度評估 */}
+                      <div className="flex flex-col gap-2 mb-3">
+                        <div className="flex gap-2">
+                          <a href={generateRouteMap(day.spots)} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center flex-1 gap-1 text-[11px] bg-[#D4A373] text-white px-3 py-2 rounded-xl font-bold hover:bg-[#C28E5B] transition-colors shadow-sm">
+                            <i className="ph-fill ph-map-trifold"></i> 📍 點我開啟路線導航
+                          </a>
+                        </div>
+                        {evalData && (
+                          <div className={`flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-xl font-bold border border-white ${evalData.colorClass}`}>
+                            <i className={`ph-fill ${evalData.icon} text-[14px]`}></i>
+                            <span>預估 {evalData.km} km ({evalData.status})</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 早中晚氣象 & 降雨機率 */}
                       <div className="flex flex-wrap gap-2">
-                         <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md text-[10px] font-bold flex items-center gap-1"><i className="ph-fill ph-sun-horizon"></i> 早 {weatherData[day.day]?.morning || '24°C'}</span>
-                         <span className="bg-orange-50 text-orange-700 px-2.5 py-1 rounded-md text-[10px] font-bold flex items-center gap-1"><i className="ph-fill ph-sun"></i> 中 {weatherData[day.day]?.noon || '28°C'}</span>
-                         <span className="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-[10px] font-bold flex items-center gap-1"><i className="ph-fill ph-moon-stars"></i> 晚 {weatherData[day.day]?.evening || '25°C'}</span>
+                         <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 border border-blue-100"><i className="ph-fill ph-sun-horizon"></i> {weatherData[day.day]?.morning?.t || '24'}°C <span className="text-blue-400">🌧️{weatherData[day.day]?.morning?.p || '10'}%</span></span>
+                         <span className="bg-orange-50 text-orange-700 px-2 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 border border-orange-100"><i className="ph-fill ph-sun"></i> {weatherData[day.day]?.noon?.t || '28'}°C <span className="text-orange-400">🌧️{weatherData[day.day]?.noon?.p || '10'}%</span></span>
+                         <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 border border-indigo-100"><i className="ph-fill ph-moon-stars"></i> {weatherData[day.day]?.evening?.t || '25'}°C <span className="text-indigo-400">🌧️{weatherData[day.day]?.evening?.p || '10'}%</span></span>
                       </div>
                     </div>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                       {day.spots.map((spot, sIdx) => (
-                        <div key={sIdx} className="flex gap-3">
-                          <div className="flex flex-col items-center">
-                            <span className="text-xs font-bold text-[#D4A373] w-10 text-center mt-1">{spot.time}</span>
-                            {sIdx !== day.spots.length - 1 && <div className="w-px h-full bg-[#E9EDC9] my-1"></div>}
+                        <div 
+                          key={spot.id} 
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, sIdx)}
+                          onDragEnter={(e) => handleDragEnter(e, sIdx)}
+                          onDragEnd={() => handleDragEnd(idx)}
+                          onDragOver={(e) => e.preventDefault()}
+                          className="flex gap-2 group relative cursor-grab active:cursor-grabbing bg-white hover:bg-[#FAEDCD]/30 p-2 -mx-2 rounded-xl transition-colors"
+                        >
+                          {/* 拖拉抓手 */}
+                          <div className="flex flex-col items-center justify-center text-[#E3D5CA] group-hover:text-[#D4A373]">
+                            <i className="ph-bold ph-dots-six-vertical text-lg"></i>
                           </div>
-                          <div className="flex-1 pb-2">
-                            <div className="flex items-start gap-2">
-                              <span className="text-lg leading-none mt-0.5">{spot.icon}</span>
-                              <div>
-                                <h4 className="font-bold text-[#6D5D53] leading-tight text-sm">{spot.name}</h4>
-                                <p className="text-xs text-[#8E8075] mt-1.5 leading-relaxed">{spot.desc}</p>
-                                {spot.mapUrl && (
-                                  <a href={spot.mapUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 mt-2 text-[10px] bg-[#E9EDC9] text-[#5A6B41] px-3 py-1.5 rounded-full font-bold hover:bg-[#CCD5AE] transition-colors">
-                                    <i className="ph ph-navigation-arrow"></i> 路線指引
-                                  </a>
-                                )}
+                          
+                          <div className="flex flex-col items-center pt-1">
+                            {/* V11 專屬純文字時間防呆輸入框 */}
+                            <input 
+                              type="text" 
+                              maxLength="5"
+                              placeholder="09:00"
+                              value={spot.time}
+                              onChange={(e) => handleSpotTimeChange(idx, spot.id, e.target.value)}
+                              className="text-xs font-bold text-[#D4A373] w-[46px] text-center bg-transparent border border-transparent hover:border-[#F2E8DC] focus:border-[#D4A373] rounded px-0 outline-none"
+                            />
+                            {sIdx !== day.spots.length - 1 && <div className="w-px h-full bg-[#E9EDC9] my-2"></div>}
+                          </div>
+                          <div className="flex-1 pb-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-start gap-2">
+                                <span className="text-lg leading-none mt-0.5">{spot.icon}</span>
+                                <div>
+                                  <h4 className="font-bold text-[#6D5D53] leading-tight text-sm mt-1">{spot.name}</h4>
+                                  <p className="text-[11px] text-[#8E8075] mt-1 leading-relaxed">{spot.desc}</p>
+                                  {spot.mapUrl && (
+                                    <a href={spot.mapUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 mt-2 text-[10px] bg-[#E9EDC9] text-[#5A6B41] px-3 py-1.5 rounded-full font-bold hover:bg-[#CCD5AE] transition-colors">
+                                      <i className="ph ph-navigation-arrow"></i> 路線指引
+                                    </a>
+                                  )}
+                                </div>
                               </div>
+                              {/* 刪除按鈕 */}
+                              <button onClick={() => deleteSpot(idx, spot.id)} className="text-gray-300 hover:text-red-400 p-1 transition-colors mt-0.5">
+                                <i className="ph ph-trash text-base"></i>
+                              </button>
                             </div>
                           </div>
                         </div>
                       ))}
+                    </div>
+
+                    {/* V10/11 自由管家：新增行程與雲端智慧搜尋區塊 */}
+                    <div className="mt-4 pt-4 border-t border-dashed border-[#F2E8DC]">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex gap-2 relative">
+                          {/* 這裡也換成純文字格式時間防呆輸入框 */}
+                          <input 
+                            type="text" 
+                            maxLength="5"
+                            placeholder="時間 (如:13:00)"
+                            value={newSpots[idx]?.time || ''} 
+                            onChange={e => {
+                               let val = e.target.value.replace(/[^0-9:]/g, '');
+                               if(val.length === 2 && !val.includes(':') && e.target.value.length === 2) val += ':';
+                               handleSpotInputChange(idx, 'time', val.substring(0, 5));
+                            }} 
+                            className="bg-[#FAEDCD] bg-opacity-30 rounded-xl px-3 py-2 text-xs text-[#5C4D43] w-[100px] border border-transparent focus:border-[#D4A373] outline-none" 
+                          />
+                          
+                          {/* 雲端地點推薦輸入框 */}
+                          <div className="relative flex-1">
+                            <input 
+                              type="text" 
+                              placeholder="搜尋日本景點以加入地圖" 
+                              value={newSpots[idx]?.name || ''} 
+                              onChange={e => handleSpotNameChange(idx, e.target.value)} 
+                              className="w-full bg-[#FAEDCD] bg-opacity-30 rounded-xl px-3 py-2 text-xs text-[#5C4D43] border border-transparent focus:border-[#D4A373] outline-none" 
+                            />
+                            {isSearching[idx] && (
+                              <div className="absolute right-3 top-2.5 text-[#D4A373]">
+                                 <i className="ph ph-spinner animate-spin"></i>
+                              </div>
+                            )}
+                            {suggestions[idx]?.length > 0 && (
+                              <ul className="absolute z-50 w-full mt-1 bg-white border border-[#F2E8DC] rounded-xl shadow-[0_4px_15px_-4px_rgba(212,163,115,0.3)] max-h-40 overflow-y-auto">
+                                {suggestions[idx].map((s, i) => (
+                                  <li 
+                                    key={i} 
+                                    onClick={() => selectSuggestion(idx, s)}
+                                    className="px-3 py-2.5 text-xs text-[#6D5D53] hover:bg-[#FAEDCD]/50 cursor-pointer border-b border-[#F2E8DC] last:border-0 truncate flex items-center gap-1.5"
+                                    title={s.display_name}
+                                  >
+                                    <i className="ph-fill ph-map-pin text-[#A3B18A] shrink-0 text-sm"></i>
+                                    <span className="truncate">{s.display_name}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <input type="text" placeholder="簡單描述一下..." value={newSpots[idx]?.desc || ''} onChange={e => handleSpotInputChange(idx, 'desc', e.target.value)} className="flex-1 bg-[#FAEDCD] bg-opacity-30 rounded-xl px-3 py-2 text-xs text-[#5C4D43] border border-transparent focus:border-[#D4A373] outline-none" onKeyPress={(e) => e.key === 'Enter' && addSpot(idx)} />
+                          <button onClick={() => addSpot(idx)} className="bg-[#A3B18A] text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-[#7A8C5E] transition-colors whitespace-nowrap">
+                            新增
+                          </button>
+                        </div>
+                      </div>
                     </div>
                     
                     <div className="mt-5 space-y-2">
@@ -499,7 +792,7 @@
                       </div>
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
             )}
 
@@ -556,7 +849,6 @@
                           <span className="text-xs font-bold text-[#A3B18A] bg-[#FAEDCD] px-2 py-1 rounded-full">{dayCompleted} / 5</span>
                         </div>
                         <div className="mt-3">
-                          {/* 改為胖胖卡片設計，增加點擊面積防呆 */}
                           {dayTasks.map((task, tIdx) => {
                             const isDone = completedTasksArr[activeChild].includes(task);
                             return (
@@ -631,7 +923,7 @@
                         value={newLuggageInputs[category.id] || ''}
                         onChange={(e) => handleLuggageInputChange(category.id, e.target.value)}
                         placeholder="輸入還要帶的物品..." 
-                        className={`flex-1 ${packTheme.bgLight} bg-opacity-30 rounded-xl px-3 py-2 text-xs ${packTheme.textItem} placeholder-gray-300 focus:border-[${packTheme.borderActive}]`}
+                        className={`flex-1 ${packTheme.bgLight} bg-opacity-30 rounded-xl px-3 py-2 text-xs ${packTheme.textItem} placeholder-gray-300 focus:border-[${packTheme.borderActive}] outline-none`}
                         onKeyPress={(e) => e.key === 'Enter' && addLuggage(category.id)}
                       />
                       <button onClick={() => addLuggage(category.id)} className={`${packTheme.btnBg} text-white px-3 py-2 rounded-xl text-xs font-bold ${packTheme.btnHover} transition-colors`}>
@@ -683,7 +975,6 @@
               <div className="animate-fade-in space-y-5 pb-6">
                 <div className="flex items-center gap-2 mb-3 text-[#8B6E58]"><i className="ph ph-shopping-bag text-[20px]"></i><h2 className="text-xl font-bold">終極血拚戰鬥清單</h2></div>
                 
-                {/* 閨蜜切換 Tab */}
                 <div className="flex bg-white rounded-full p-1 border border-[#F2E8DC] shadow-sm mb-2">
                   <button onClick={() => setActiveShopper('maomao')} className={`flex-1 py-2 text-sm font-bold rounded-full transition-all flex items-center justify-center gap-1 ${activeShopper === 'maomao' ? 'bg-[#D4A373] text-white shadow-md' : 'text-[#8E8075]'}`}>
                     <i className="ph-fill ph-heart"></i> Maomao 清單
@@ -693,7 +984,6 @@
                   </button>
                 </div>
                 
-                {/* 互動式願望清單 */}
                 <div className={`bg-white rounded-3xl p-5 shadow-sm border-2 transition-colors ${activeShopper === 'maomao' ? 'border-[#D4A373]' : 'border-[#A3B18A]'}`}>
                   <div className="flex items-center justify-between mb-3 pb-3 border-b border-[#F2E8DC]">
                     <h3 className={`font-bold flex items-center gap-2 text-lg transition-colors ${activeShopper === 'maomao' ? 'text-[#D4A373]' : 'text-[#A3B18A]'}`}>
@@ -739,7 +1029,7 @@
                       value={newWish}
                       onChange={(e) => setNewWish(e.target.value)}
                       placeholder="輸入想買的新寶物..." 
-                      className="flex-1 bg-[#FAEDCD] bg-opacity-30 rounded-xl px-3 py-2 text-xs text-[#5C4D43] placeholder-[#D3C4B7]"
+                      className="flex-1 bg-[#FAEDCD] bg-opacity-30 rounded-xl px-3 py-2 text-xs text-[#5C4D43] placeholder-[#D3C4B7] outline-none"
                       onKeyPress={(e) => e.key === 'Enter' && addWish()}
                     />
                     <button onClick={addWish} className={`text-white px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeShopper === 'maomao' ? 'bg-[#D4A373] hover:bg-[#C28E5B]' : 'bg-[#A3B18A] hover:bg-[#8A9A71]'}`}>
