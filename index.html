@@ -365,10 +365,10 @@
     }
 
     function App() {
-      const [activeTab, setActiveTab] = useState('itinerary');
+      const [activeTab, setActiveTab] = useState('contact'); // 為了方便妳確認聯繫頁面，預設先跳到這頁
       
-      // V10: 行程自由編輯狀態 (更新快取金鑰確保讀取到新行程)
-      const [itinerary, setItinerary] = useStickyState(defaultItineraryData, 'ddsen-itinerary-v10-final-perfect');
+      // V10: 行程自由編輯狀態
+      const [itinerary, setItinerary] = useStickyState(defaultItineraryData, 'ddsen-itinerary-v13');
       const [newSpots, setNewSpots] = useState({});
 
       // 雲端智慧地點搜尋狀態
@@ -380,13 +380,13 @@
       const [activeShopper, setActiveShopper] = useState('maomao');
       const [activePacker, setActivePacker] = useState('maomao');
       
-      const [completedTasksArr, setCompletedTasksArr] = useStickyState({ jiebao: [], ningning: [] }, 'ddsen-tasks-v10-perfect');
-      const [maomaoWishlist, setMaomaoWishlist] = useStickyState(defaultMaomaoWishlist, 'ddsen-wish-maomao-img-v1');
-      const [leileiWishlist, setLeileiWishlist] = useStickyState(defaultLeileiWishlist, 'ddsen-wish-leilei-img-v1');
+      const [completedTasksArr, setCompletedTasksArr] = useStickyState({ jiebao: [], ningning: [] }, 'ddsen-tasks-v13');
+      const [maomaoWishlist, setMaomaoWishlist] = useStickyState(defaultMaomaoWishlist, 'ddsen-wish-maomao-img-v13');
+      const [leileiWishlist, setLeileiWishlist] = useStickyState(defaultLeileiWishlist, 'ddsen-wish-leilei-img-v13');
       const [newWish, setNewWish] = useState('');
       
-      const [maomaoLuggage, setMaomaoLuggage] = useStickyState(defaultLuggageCategories, 'ddsen-luggage-maomao-v10-perfect');
-      const [leileiLuggage, setLeileiLuggage] = useStickyState(defaultLuggageCategories, 'ddsen-luggage-leilei-v10-perfect');
+      const [maomaoLuggage, setMaomaoLuggage] = useStickyState(defaultLuggageCategories, 'ddsen-luggage-maomao-v13');
+      const [leileiLuggage, setLeileiLuggage] = useStickyState(defaultLuggageCategories, 'ddsen-luggage-leilei-v13');
       const [newLuggageInputs, setNewLuggageInputs] = useState({});
       
       const [weatherData, setWeatherData] = useState({});
@@ -456,9 +456,8 @@
         dragOverItem.current = null;
       };
 
-      // V11 時間防呆自動格式化 (不跑出上午下午)
       const handleSpotTimeChange = (dayIdx, spotId, val) => {
-        let formatted = val.replace(/[^0-9:]/g, ''); // 只保留數字和冒號
+        let formatted = val.replace(/[^0-9:]/g, '');
         if (formatted.length === 2 && !formatted.includes(':') && val.length === 2) {
             formatted += ':';
         }
@@ -479,7 +478,6 @@
         }));
       };
 
-      // 雲端智慧搜尋魔法
       const handleSpotNameChange = (dayIdx, value) => {
         handleSpotInputChange(dayIdx, 'name', value);
         if (searchTimeoutRef.current[dayIdx]) clearTimeout(searchTimeoutRef.current[dayIdx]);
@@ -536,7 +534,6 @@
         setItinerary(newIt);
       };
 
-      // --- 其他邏輯 ---
       const toggleTask = (task) => {
         setCompletedTasksArr(prev => {
           const childTasks = new Set(prev[activeChild] || []);
@@ -599,8 +596,8 @@
           
           <div className="sticky top-0 z-50 bg-white shadow-sm rounded-b-[2rem] overflow-hidden">
             <header className="bg-[#D4A373] text-white pt-10 pb-4 px-6 relative z-10">
-              <h1 className="text-2xl font-bold mb-1 tracking-wider">魚堡婚禮沖繩之旅 V.10</h1>
-              <p className="text-[#FDFBF7] opacity-90 text-sm">桔甯bean旅行攻略 (終極管家版)</p>
+              <h1 className="text-2xl font-bold mb-1 tracking-wider">魚堡婚禮沖繩之旅 V.13</h1>
+              <p className="text-[#FDFBF7] opacity-90 text-sm">桔甯bean旅行攻略 (滿配管家版)</p>
             </header>
             
             <nav className="bg-white/95 backdrop-blur-md px-1 py-2 flex justify-between items-center border-b border-[#F2E8DC] relative z-10">
@@ -633,7 +630,6 @@
                   return (
                   <div key={idx} className="bg-white rounded-3xl p-5 shadow-sm border border-[#F2E8DC] relative overflow-hidden">
                     
-                    {/* 天氣小卡 */}
                     <a href={day.weather?.link || day.link} target="_blank" rel="noreferrer" className="absolute top-4 right-4 bg-[#E9EDC9] bg-opacity-50 hover:bg-opacity-100 transition-all text-[#5A6B41] px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shadow-sm">
                       <span className="text-lg leading-none">{day.weather?.icon || "🌤️"}</span>
                       <div className="flex flex-col">
@@ -645,7 +641,6 @@
                       <span className="text-[#A3B18A] font-bold text-sm">{day.date}</span>
                       <h3 className="text-lg font-bold text-[#5C4D43] mt-1 mb-2">{day.day} - {day.title}</h3>
                       
-                      {/* 今日路線總覽 & 順暢度評估 */}
                       <div className="flex flex-col gap-2 mb-3">
                         <div className="flex gap-2">
                           <a href={generateRouteMap(day.spots)} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center flex-1 gap-1 text-[11px] bg-[#D4A373] text-white px-3 py-2 rounded-xl font-bold hover:bg-[#C28E5B] transition-colors shadow-sm">
@@ -660,7 +655,6 @@
                         )}
                       </div>
 
-                      {/* 早中晚氣象 */}
                       <div className="flex flex-wrap gap-2">
                          <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 border border-blue-100"><i className="ph-fill ph-sun-horizon"></i> {weatherData[day.day]?.morning?.t || '24'}°C <span className="text-blue-400">🌧️{weatherData[day.day]?.morning?.p || '10'}%</span></span>
                          <span className="bg-orange-50 text-orange-700 px-2 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 border border-orange-100"><i className="ph-fill ph-sun"></i> {weatherData[day.day]?.noon?.t || '28'}°C <span className="text-orange-400">🌧️{weatherData[day.day]?.noon?.p || '10'}%</span></span>
@@ -717,7 +711,6 @@
                       ))}
                     </div>
 
-                    {/* V10 自由管家：新增行程與雲端智慧搜尋區塊 */}
                     <div className="mt-4 pt-4 border-t border-dashed border-[#F2E8DC]">
                       <div className="flex flex-col gap-2">
                         <div className="flex gap-2 relative">
@@ -1063,6 +1056,21 @@
                   <h2 className="text-xl font-bold">管家服務與緊急聯繫</h2>
                 </div>
 
+                {/* 入境與免稅必備 (Visit Japan Web) */}
+                <div className="bg-[#E0F2FE] rounded-3xl p-5 shadow-sm border border-[#BAE6FD]">
+                  <h3 className="font-bold text-[#0369A1] flex items-center gap-2 mb-3 pb-3 border-b border-[#BAE6FD] text-lg">
+                    <i className="ph-fill ph-qr-code"></i> 入境與免稅必備
+                  </h3>
+                  <div className="flex flex-col gap-2">
+                    <p className="text-[11px] text-[#0C4A6E] leading-relaxed">
+                      媽咪已經填好入境資料囉！點擊下方按鈕可隨時開啟 Visit Japan Web，入境通關及購物申請<span className="font-bold">免稅 QR Code</span>都靠它！
+                    </p>
+                    <a href="https://services.digital.go.jp/zh-cmn-hant/visit-japan-web/" target="_blank" rel="noreferrer" className="mt-2 bg-[#0284C7] hover:bg-[#0369A1] text-white text-center py-3 rounded-xl font-bold text-sm shadow-sm transition-colors flex items-center justify-center gap-2">
+                      <i className="ph-bold ph-link"></i> 開啟 Visit Japan Web
+                    </a>
+                  </div>
+                </div>
+
                 <div className="bg-white rounded-3xl p-5 shadow-sm border border-[#F2E8DC]">
                   <h3 className="font-bold text-[#D4A373] flex items-center gap-2 mb-3 pb-3 border-b border-[#F2E8DC] text-lg">
                     <i className="ph-fill ph-buildings"></i> 住宿地點資訊
@@ -1137,6 +1145,22 @@
                       <p className="text-[11px] text-[#831843] leading-relaxed">
                         急難救助專線：<a href="tel:+819019428936" className="underline font-bold">+81-90-1942-8936</a><br/>
                         辦公室電話：<a href="tel:+81988627008" className="underline">+81-98-862-7008</a>
+                      </p>
+                    </div>
+                    <div className="border-t border-dashed border-[#FBCFE8] pt-3">
+                      <h4 className="font-bold text-[#9D174D] text-sm mb-1">🏥 距離恩納村 (BEB5) 較近醫院</h4>
+                      <p className="text-[11px] text-[#831843] leading-relaxed">
+                        <span className="font-bold">沖繩縣立北部醫院 (Nago)</span><br/>
+                        電話：<a href="tel:+81980522719" className="underline">+81 980-52-2719</a><br/>
+                        <a href={getMapLink("沖繩縣立北部病院")} target="_blank" className="text-[#BE185D] flex items-center gap-1 mt-1 hover:underline"><i className="ph ph-map-pin"></i> 導航至北部醫院</a>
+                      </p>
+                    </div>
+                    <div className="border-t border-dashed border-[#FBCFE8] pt-3">
+                      <h4 className="font-bold text-[#9D174D] text-sm mb-1">🏥 距離那霸市區 (The Nest) 較近醫院</h4>
+                      <p className="text-[11px] text-[#831843] leading-relaxed">
+                        <span className="font-bold">沖繩赤十字病院</span><br/>
+                        電話：<a href="tel:+81988533134" className="underline">+81 98-853-3134</a><br/>
+                        <a href={getMapLink("沖縄赤十字病院")} target="_blank" className="text-[#BE185D] flex items-center gap-1 mt-1 hover:underline"><i className="ph ph-map-pin"></i> 導航至赤十字病院</a>
                       </p>
                     </div>
                   </div>
